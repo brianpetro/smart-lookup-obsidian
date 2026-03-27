@@ -1,0 +1,10 @@
+{
+  "id": "smart-lookup",
+  "name": "Smart Lookup",
+  "author": "Brian Petro",
+  "description": "Query-first semantic search for your Obsidian vault.",
+  "minAppVersion": "1.1.0",
+  "authorUrl": "https://smartconnections.app",
+  "isDesktopOnly": false,
+  "version": "0.1.0"
+}

@@ -1,0 +1,36 @@
+{
+  "name": "smart-lookup-obsidian",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Smart Lookup plugin for Obsidian (query-first semantic retrieval).",
+  "scripts": {
+    "build": "node esbuild.js",
+    "release": "node release.js",
+    "test": "npx ava --verbose"
+  },
+  "author": "🌴 Brian (Brian Petro)",
+  "license": "SEE LICENSE IN LICENSE",
+  "dependencies": {
+    "obsidian": "latest",
+    "obsidian-smart-env": "file:../obsidian-smart-env",
+    "smart-collections": "file:../jsbrains/smart-collections",
+    "smart-sources": "file:../jsbrains/smart-sources"
+  },
+  "devDependencies": {
+    "archiver": "^6.0.1",
+    "ava": "^6.0.1",
+    "axios": "^1.6.7",
+    "dotenv": "^16.3.1",
+    "esbuild": "^0.25.9"
+  },
+  "ava": {
+    "files": [
+      "src/**/*.test.js"
+    ],
+    "require": []
+  },
+  "workspaces": [
+    "../jsbrains/*",
+    "../obsidian-smart-env"
+  ]
+}

@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.obsidian
+.vscode
+dist
+node_modules
+stylesheets
+ref
+
+*.sublime-*
+
+.git-dev
