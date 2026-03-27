@@ -2,9 +2,9 @@
 import lookup_lists from './src/collections/lookup_lists.js';
 
 
-import { render as lookup_item_view_component } from './src/components/lookup/item_view.js';
-import { render as lookup_v3_list_component } from './src/components/lookup/v3/list.js';
-import { render as lookup_v3_list_item_component, settings_config as lookup_v3_list_item_component_settings_config } from './src/components/lookup/v3/list_item.js';
+import { render as lookup_item_view_component, version as lookup_item_view_component_version } from './src/components/lookup/item_view.js';
+import { render as lookup_v3_list_component, version as lookup_v3_list_component_version } from './src/components/lookup/v3/list.js';
+import { render as lookup_v3_list_item_component, settings_config as lookup_v3_list_item_component_settings_config, version as lookup_v3_list_item_component_version } from './src/components/lookup/v3/list_item.js';
 
 
 export const smart_env_config = {
@@ -21,9 +21,9 @@ export const smart_env_config = {
 
   },
   components: {
-    lookup_item_view: { render: lookup_item_view_component },
-    lookup_v3_list: { render: lookup_v3_list_component },
-    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config }
+    lookup_item_view: { render: lookup_item_view_component, version: lookup_item_view_component_version },
+    lookup_v3_list: { render: lookup_v3_list_component, version: lookup_v3_list_component_version },
+    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: lookup_v3_list_item_component_version }
   },
   actions: {
 

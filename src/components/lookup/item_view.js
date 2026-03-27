@@ -18,7 +18,7 @@ export async function build_html(view, params = {}) {
         required
       ></textarea>
     </form>
-    <div class="lookup-list-container">
+    <div class="smart-lookup-list-container">
       <p>${INFO}</p>
     </div>
   </div></div>`;
@@ -36,7 +36,7 @@ export async function render(view, params = {}) {
 export async function post_process(view, container, params = {}) {
   const query_input = container.querySelector('.lookup-query-input');
   const query_form = container.querySelector('.lookup-query-form');
-  const list_container = container.querySelector('.lookup-list-container');
+  const list_container = container.querySelector('.smart-lookup-list-container');
   const state = { last_query: null };
   const submit_query = async (raw_query) => {
     const query = sanitize_query(raw_query);
@@ -75,3 +75,5 @@ export function update_query_validity({ input_el, query }) {
   if (!query) input_el.setCustomValidity(REQUIRED_MESSAGE);
   else input_el.setCustomValidity('');
 }
+
+export const version = '1.0.0';

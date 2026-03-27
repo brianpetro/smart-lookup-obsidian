@@ -1,11 +1,13 @@
+import styles_css from './styles.css';
 export async function build_html(lookup_list, opts = {}) {
-  return `<div><div class="lookup-list" data-key="${lookup_list.item.key}"></div></div>`;
+  return `<div class="smart-lookup-list" data-key="${lookup_list.item.key}"></div>`;
 }
 
 export async function render(lookup_list, opts = {}) {
+  this.apply_style_sheet(styles_css);
   const html = await build_html.call(this, lookup_list, opts);
   const frag = this.create_doc_fragment(html);
-  const container = frag.querySelector('.lookup-list');
+  const container = frag.firstElementChild;
   post_process.call(this, lookup_list, container, opts);
   return container;
 }
@@ -28,3 +30,5 @@ export async function post_process(lookup_list, container, opts = {}) {
   result_frags.forEach((result_frag) => container.appendChild(result_frag));
   return container;
 }
+
+export const version = '1.0.0';

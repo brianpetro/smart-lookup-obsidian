@@ -1,4 +1,3 @@
-import styles_css from './styles.css';
 import { DISPLAY_SEPARATOR, get_item_display_name } from 'obsidian-smart-env/src/utils/get_item_display_name.js';
 import { register_item_hover_popover } from 'obsidian-smart-env/src/utils/register_item_hover_popover.js';
 import { register_item_drag } from 'obsidian-smart-env/src/utils/register_item_drag.js';
@@ -7,7 +6,7 @@ import { open_source } from "obsidian-smart-env/src/utils/open_source.js";
 
 /**
  * Builds the HTML string for the result component.
- * .temp-container is used so listeners can be added to .sc-result (otherwise does not persist) 
+ * .temp-container is used so listeners can be added to .lookup-result (otherwise does not persist) 
  * @param {Object} result - The results a <Result> object 
  * @param {Object} [params={}] - Optional parameters.
  * @returns {Promise<string>} A promise that resolves to the HTML string.
@@ -25,7 +24,7 @@ export async function build_html(result, params = {}) {
   
   return `<div class="temp-container">
     <div
-      class="sc-result ${all_expanded ? '' : 'sc-collapsed'}"
+      class="lookup-result ${all_expanded ? '' : 'sc-collapsed'}"
       data-path="${item.path.replace(/"/g, '&quot;')}"
       data-link="${item.link?.replace(/"/g, '&quot;') || ''}"
       data-collection="${item.collection_key}"
@@ -35,12 +34,12 @@ export async function build_html(result, params = {}) {
     >
       <span class="header">
         ${this.get_icon_html('right-triangle')}
-        <a class="sc-result-file-title" href="#" title="${item.path.replace(/"/g, '&quot;')}" draggable="true">
+        <a class="lookup-result-file-title" href="#" title="${item.path.replace(/"/g, '&quot;')}" draggable="true">
           ${header_html}
         </a>
       </span>
       <ul draggable="true">
-        <li class="sc-result-file-title" title="${item.path.replace(/"/g, '&quot;')}" data-collection="${item.collection_key}" data-key="${item.key}"></li>
+        <li class="lookup-result-file-title" title="${item.path.replace(/"/g, '&quot;')}" data-collection="${item.collection_key}" data-key="${item.key}"></li>
       </ul>
     </div>
   </div>`;
@@ -53,10 +52,9 @@ export async function build_html(result, params = {}) {
  * @returns {Promise<DocumentFragment>} A promise that resolves to the processed document fragment.
  */
 export async function render(result_scope, params = {}) {
-  this.apply_style_sheet(styles_css);
   let html = await build_html.call(this, result_scope, params);
   const frag = this.create_doc_fragment(html);
-  const container = frag.querySelector('.sc-result');
+  const container = frag.querySelector('.lookup-result');
   post_process.call(this, result_scope, container, params);
   return container;
 }
@@ -72,14 +70,13 @@ export async function render(result_scope, params = {}) {
 export async function post_process(result_scope, container, params = {}) {
   const { item } = result_scope;
   const env = item.env;
-  const plugin = env.smart_lookup_plugin;
-  const app = plugin.app;
+  const app = env.obsidian_app;
   const lookup_settings = params.lookup_settings
     ?? env.lookup_lists.settings
   ;
   const component_settings = lookup_settings.components?.lookup_v3_list_item || {};
   const should_render_markdown = component_settings?.render_markdown ?? true;
-  if (!should_render_markdown) container.classList.add('sc-result-plaintext');
+  if (!should_render_markdown) container.classList.add('lookup-result-plaintext');
 
   const render_result = async (_result_elm) => {
     if (!_result_elm.querySelector('li').innerHTML) {
@@ -178,7 +175,7 @@ export function process_for_rendering(content) {
 function toggle_result(event) {
   event.preventDefault();
   event.stopPropagation();
-  const _result_elm = event.target.closest('.sc-result');
+  const _result_elm = event.target.closest('.lookup-result');
   _result_elm.classList.toggle('sc-collapsed');
 };
 
@@ -198,3 +195,5 @@ export const settings_config = {
     group: "Lookup list item"
   },
 };
+
+export const version = '1.0.0';

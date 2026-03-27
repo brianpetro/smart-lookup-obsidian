@@ -36,7 +36,7 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 30%, transparent);
 }
 
-.lookup-item-view .lookup-list-container {
+.lookup-item-view .smart-lookup-list-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
