@@ -27,7 +27,7 @@ export default class SmartLookupPlugin extends SmartPlugin {
   onload() {
     this.app.workspace.onLayoutReady(this.initialize.bind(this));
     this.SmartEnv.create(this, this.smart_env_config);
-    this.addSettingTab(new this.LookupSettingsTab(this.app, this));
+    this.addSettingTab(new this.LookupSettingsTab(this.app, this, 'smart-lookup'));
     this.register_commands();
     this.register_item_views();
     this.register_ribbon_icons();

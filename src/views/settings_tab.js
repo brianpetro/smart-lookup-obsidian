@@ -2,15 +2,6 @@ import { SmartPluginSettingsTab } from 'obsidian-smart-env';
 import { render_settings_config } from 'obsidian-smart-env/src/utils/render_settings_config.js';
 
 export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
-  constructor(app, plugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
-  // async render_header(container) {
-  //   const header = await this.env.smart_components.render_component('lookup_settings_header', this.plugin);
-  //   container.appendChild(header);
-  // }
 
   async render_plugin_settings(container) {
     if (!container) return;
