@@ -50,7 +50,7 @@ export async function post_process(view, container, params = {}) {
     state.last_query = query;
     const next_params = { ...params, query };
     const lookup_list = view.env.lookup_lists.new_item(next_params);
-    const rendered_list = await view.env.render_component('lookup_v3_list', lookup_list, next_params);
+    const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, next_params);
     this.empty(list_container);
     list_container.appendChild(rendered_list);
   };
