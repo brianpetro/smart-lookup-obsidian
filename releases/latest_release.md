@@ -1,3 +1,5 @@
+> [!NOTE] Patch v0.1.3
+> - Added an Auto-submit toggle to the lookup query form so you can pause automatic lookups and run them manually.
 
 # Smart Lookup v1
 
