@@ -195,5 +195,3 @@ export const settings_config = {
     group: "Lookup list item"
   },
 };
-
-export const version = '1.0.0';

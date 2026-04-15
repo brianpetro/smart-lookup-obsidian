@@ -30,5 +30,3 @@ export async function post_process(lookup_list, container, opts = {}) {
   result_frags.forEach((result_frag) => container.appendChild(result_frag));
   return container;
 }
-
-export const version = '1.0.0';

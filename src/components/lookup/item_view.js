@@ -136,5 +136,3 @@ export function update_submit_state({ submit_btn, query }) {
   if (!submit_btn) return;
   submit_btn.disabled = !query;
 }
-
-export const version = '1.0.1';
