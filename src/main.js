@@ -55,8 +55,4 @@ export default class SmartLookupPlugin extends SmartPlugin {
       }
     };
   }
-
-  show_release_notes() {
-    return this.ReleaseNotesView.open(this.app.workspace, this.manifest.version);
-  }
 }
