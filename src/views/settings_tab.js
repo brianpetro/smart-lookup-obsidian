@@ -12,7 +12,12 @@ export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
       attr: { 'data-section-key': 'lookup_lists' },
     });
 
-    const lookup_lists_settings_config = this.env.config.collections.lookup_lists.settings_config;
+    const lookup_lists_settings_config = () => {
+      return this.env.lookup_lists?.settings_config
+        || this.env.config.collections.lookup_lists.settings_config
+      ;
+    };
+
     render_settings_config(
       lookup_lists_settings_config,
       this.env.lookup_lists,
