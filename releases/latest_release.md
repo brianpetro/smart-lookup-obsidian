@@ -1,7 +1,7 @@
 # Introducing Smart Lookup Core `v0.1`
 
-> [!NOTE] What's new in `v0.1.4`
-> fix: use window.clearTimeout for consistency in create_debounced_submit
+> [!NOTE] What's new in `v0.1.5`
+> Publish to Obsidian Community Plugins
 
 Smart Lookup is now its own Core plugin for Obsidian.
 
