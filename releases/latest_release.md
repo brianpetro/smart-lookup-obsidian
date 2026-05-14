@@ -1,7 +1,7 @@
 # Introducing Smart Lookup Core `v0.1`
 
-> [!NOTE] What's new in `v0.1.5`
-> Publish to Obsidian Community Plugins
+> [!NOTE] What's new in `v0.1.6`
+> refactor: remove unused dependencies and improve HTML rendering safety
 
 Smart Lookup is now its own Core plugin for Obsidian.
 
