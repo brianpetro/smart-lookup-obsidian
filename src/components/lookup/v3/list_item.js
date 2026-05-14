@@ -70,7 +70,6 @@ export async function render(result_scope, params = {}) {
 export async function post_process(result_scope, container, params = {}) {
   const { item } = result_scope;
   const env = item.env;
-  const app = env.obsidian_app;
   const lookup_settings = params.lookup_settings
     ?? env.lookup_lists.settings
   ;
@@ -168,7 +167,7 @@ export function process_for_rendering(content) {
   if (content.includes('```smart-context')) content = content.replace(/```smart-context/g, '```\\smart-context');
   if (content.includes('```smart-chatgpt')) content = content.replace(/```smart-chatgpt/g, '```\\smart-chatgpt');
   // prevent link embedding
-  if (content.includes('![[')) content = content.replace(/\!\[\[/g, '! [[');
+  if (content.includes('![[')) content = content.replace(/!\[\[/g, '! [[');
   return content;
 }
 
