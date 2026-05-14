@@ -9,20 +9,8 @@ const AUTO_SUBMIT_INFO = 'Automatically run lookup after you pause typing. Turn 
 const SUBMIT_LABEL = 'Lookup';
 
 /**
- * @typedef {import('smart-types').LookupItemViewParams} LookupRenderParams
- * @typedef {import('smart-types').LookupViewLike} LookupItemViewLike
- * @typedef {import('smart-types').SmartViewRenderer} SmartViewLike
- */
-
-/**
- * @typedef {object} LookupViewState
- * @property {string} last_query
- * @property {number} active_request_id
- */
-
-/**
- * @param {LookupItemViewLike} _view
- * @param {LookupRenderParams} params
+ * @param {import('smart-types').LookupViewLike} _view
+ * @param {import('smart-types').LookupRenderParams} params
  * @returns {Promise<string>}
  */
 export async function build_html(_view, params = {}) {
@@ -58,9 +46,9 @@ export async function build_html(_view, params = {}) {
 }
 
 /**
- * @this {SmartViewLike}
- * @param {LookupItemViewLike} view
- * @param {LookupRenderParams} params
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupViewLike} view
+ * @param {import('smart-types').LookupRenderParams} params
  * @returns {Promise<HTMLElement>}
  */
 export async function render(view, params = {}) {
@@ -73,10 +61,10 @@ export async function render(view, params = {}) {
 }
 
 /**
- * @this {SmartViewLike}
- * @param {LookupItemViewLike} view
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupViewLike} view
  * @param {HTMLElement} container
- * @param {LookupRenderParams} params
+ * @param {import('smart-types').LookupRenderParams} params
  * @returns {Promise<HTMLElement>}
  */
 export async function post_process(view, container, params = {}) {
@@ -85,7 +73,7 @@ export async function post_process(view, container, params = {}) {
   const auto_submit_input = query_required_checkbox(container, '.lookup-query-auto-submit');
   const submit_btn = query_required_button(container, '.lookup-query-submit');
   const list_container = query_required_element(container, '.smart-lookup-list-container');
-  /** @type {LookupViewState} */
+  /** @type {import('smart-types').LookupViewState} */
   const state = { last_query: '', active_request_id: 0 };
 
   const render_info_state = () => {

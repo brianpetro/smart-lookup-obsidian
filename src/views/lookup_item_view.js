@@ -1,13 +1,7 @@
 import { SmartItemView } from 'obsidian-smart-env/views/smart_item_view.js';
 
 /**
- * @typedef {import('smart-types').SmartComponentRegistry} SmartComponentsLike
  * @typedef {import('obsidian-smart-env').ObsidianHTMLElement} ObsidianContainerEl
- */
-
-/**
- * @typedef {object} LookupItemViewEnv
- * @property {SmartComponentsLike} smart_components
  */
 
 export class LookupItemView extends SmartItemView {
@@ -21,12 +15,20 @@ export class LookupItemView extends SmartItemView {
    * @returns {Promise<void>}
    */
   async render_view(lookup_params = {}, container = null) {
-    const env = /** @type {LookupItemViewEnv} */ (this);
+    const env = get_lookup_env(this);
     const target_container = container || get_view_container(this);
     const frag = await env.smart_components.render_component('lookup_item_view', this, lookup_params);
     empty_container(target_container);
     target_container.appendChild(frag);
   }
+}
+
+/**
+ * @param {{ env?: unknown }} view
+ * @returns {import('smart-types').LookupItemViewEnvLike}
+ */
+function get_lookup_env(view) {
+  return /** @type {import('smart-types').LookupItemViewEnvLike} */ (view.env);
 }
 
 /**

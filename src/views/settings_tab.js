@@ -3,25 +3,10 @@ import { render_settings_config as raw_render_settings_config } from 'obsidian-s
 
 /**
  * @typedef {import('smart-types').SettingsConfig} SettingsConfig
- * @typedef {import('smart-types').LookupListsCollectionLike} LookupListsLike
- * @typedef {import('obsidian-smart-env').SmartEnv} SmartEnvBase
  * @typedef {import('obsidian-smart-env').ObsidianHTMLElement} ObsidianContainerEl
  */
 
-/**
- * @typedef {SmartEnvBase & {
- *   lookup_lists: LookupListsLike,
- *   config: { collections: { lookup_lists: { settings_config: SettingsConfig } } },
- * }} LookupSettingsEnv
- */
-
-/**
- * @typedef {object} RenderSettingsParams
- * @property {string} [default_group_name]
- * @property {Record<string, unknown>} [group_params]
- */
-
-const render_settings_config = /** @type {(settings_config: (() => SettingsConfig), scope: LookupListsLike, container: HTMLElement, params?: RenderSettingsParams) => unknown} */ (raw_render_settings_config);
+const render_settings_config = /** @type {(settings_config: (() => SettingsConfig), scope: import('smart-types').LookupListsCollectionLike, container: HTMLElement, params?: import('smart-types').LookupRenderSettingsParams) => unknown} */ (raw_render_settings_config);
 
 export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
 
@@ -33,7 +18,7 @@ export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
     if (!container) return;
     container.empty?.();
 
-    const env = /** @type {LookupSettingsEnv} */ (this);
+    const env = get_lookup_env(this);
     const lookup_container = container.createDiv({
       cls: 'smart-lookup-settings__section',
       attr: { 'data-section-key': 'lookup_lists' },
@@ -72,4 +57,12 @@ export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
       }
     );
   }
+}
+
+/**
+ * @param {{ env?: unknown }} scope
+ * @returns {import('smart-types').LookupSettingsEnvLike}
+ */
+function get_lookup_env(scope) {
+  return /** @type {import('smart-types').LookupSettingsEnvLike} */ (scope.env);
 }

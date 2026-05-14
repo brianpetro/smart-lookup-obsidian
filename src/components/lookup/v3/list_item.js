@@ -4,26 +4,11 @@ import { register_item_drag } from 'obsidian-smart-env/src/utils/register_item_d
 import { open_source } from "obsidian-smart-env/src/utils/open_source.js";
 
 /**
- * @typedef {import('smart-types').SmartViewRenderer & {
- *   create_doc_fragment: (html: string) => DocumentFragment,
- *   get_icon_html: (icon_name: string) => string,
- *   render_markdown: (markdown: string, source: import('smart-types').LookupEntity) => Promise<DocumentFragment | HTMLElement>,
- * }} SmartViewLike
- * @typedef {import('smart-types').LookupEntityCollection} LookupEntityCollection
- * @typedef {import('smart-types').LookupEnv} LookupEnv
- * @typedef {import('smart-types').LookupEntity} LookupEntity
- * @typedef {import('smart-types').LookupResultScope} LookupResultScope
- * @typedef {import('smart-types').LookupListItemSettings} LookupListItemSettings
- * @typedef {import('smart-types').LookupSettings} LookupSettings
- * @typedef {import('smart-types').LookupListItemParams} LookupListItemParams
- */
-
-/**
  * Builds the HTML string for the result component.
  * .temp-container is used so listeners can be added to .lookup-result (otherwise does not persist)
- * @this {SmartViewLike}
- * @param {LookupResultScope} result - The results a <Result> object
- * @param {LookupListItemParams} [params={}] - Optional parameters.
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupResultScope} result - The results a <Result> object
+ * @param {import('smart-types').LookupListItemParams} [params={}] - Optional parameters.
  * @returns {Promise<string>} A promise that resolves to the HTML string.
  */
 export async function build_html(result, params = {}) {
@@ -66,9 +51,9 @@ export async function build_html(result, params = {}) {
 
 /**
  * Renders the result component by building the HTML and post-processing it.
- * @this {SmartViewLike}
- * @param {LookupResultScope} result_scope - The result object containing component data.
- * @param {LookupListItemParams} [params={}] - Optional parameters.
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupResultScope} result_scope - The result object containing component data.
+ * @param {import('smart-types').LookupListItemParams} [params={}] - Optional parameters.
  * @returns {Promise<HTMLElement>} A promise that resolves to the processed element.
  */
 export async function render(result_scope, params = {}) {
@@ -81,10 +66,10 @@ export async function render(result_scope, params = {}) {
 
 /**
  * Post-processes the rendered document fragment by adding event listeners and rendering entity details.
- * @this {SmartViewLike}
- * @param {LookupResultScope} result_scope - The result object containing component data.
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupResultScope} result_scope - The result object containing component data.
  * @param {HTMLElement} container - The document fragment to be post-processed.
- * @param {LookupListItemParams} [params={}] - Optional parameters.
+ * @param {import('smart-types').LookupListItemParams} [params={}] - Optional parameters.
  * @returns {Promise<HTMLElement>} A promise that resolves to the post-processed element.
  */
 export async function post_process(result_scope, container, params = {}) {
@@ -162,8 +147,8 @@ export async function post_process(result_scope, container, params = {}) {
 
 /**
  * @param {number} score
- * @param {LookupEntity} item
- * @param {LookupListItemSettings} component_settings
+ * @param {import('smart-types').LookupEntity} item
+ * @param {import('smart-types').LookupListItemSettings} component_settings
  * @returns {string}
  */
 function get_result_header_html(score, item, component_settings = {}) {
@@ -201,7 +186,7 @@ function format_item_parts(parts, lines = []) {
 }
 
 /**
- * @param {LookupEntity | null | undefined} entity
+ * @param {import('smart-types').LookupEntity | null | undefined} entity
  * @returns {boolean}
  */
 export function should_render_embed(entity) {
@@ -276,9 +261,9 @@ function query_optional_element(container, selector) {
 }
 
 /**
- * @param {LookupEnv} env
+ * @param {import('smart-types').LookupEnv} env
  * @param {string} collection_key
- * @returns {LookupEntityCollection|null}
+ * @returns {import('smart-types').LookupEntityCollection|null}
  */
 function get_entity_collection(env, collection_key) {
   const collection = env[collection_key];
@@ -288,7 +273,7 @@ function get_entity_collection(env, collection_key) {
 
 /**
  * @param {unknown} value
- * @returns {value is LookupEntityCollection}
+ * @returns {value is import('smart-types').LookupEntityCollection}
  */
 function is_entity_collection(value) {
   return Boolean(value)

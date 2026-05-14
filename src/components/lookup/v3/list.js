@@ -1,14 +1,8 @@
 import styles_css from './styles.css';
 
 /**
- * @typedef {import('smart-types').LookupListOptions} LookupListOptions
- * @typedef {import('smart-types').LookupListLike} LookupListLike
- * @typedef {import('smart-types').SmartViewRenderer} SmartViewLike
- */
-
-/**
- * @param {LookupListLike} lookup_list
- * @param {LookupListOptions} _opts
+ * @param {import('smart-types').LookupListLike} lookup_list
+ * @param {import('smart-types').LookupListOptions} _opts
  * @returns {Promise<string>}
  */
 export async function build_html(lookup_list, _opts = {}) {
@@ -16,9 +10,9 @@ export async function build_html(lookup_list, _opts = {}) {
 }
 
 /**
- * @this {SmartViewLike}
- * @param {LookupListLike} lookup_list
- * @param {LookupListOptions} opts
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupListLike} lookup_list
+ * @param {import('smart-types').LookupListOptions} opts
  * @returns {Promise<HTMLElement>}
  */
 export async function render(lookup_list, opts = {}) {
@@ -31,10 +25,10 @@ export async function render(lookup_list, opts = {}) {
 }
 
 /**
- * @this {SmartViewLike}
- * @param {LookupListLike} lookup_list
+ * @this {import('smart-types').SmartViewLike}
+ * @param {import('smart-types').LookupListLike} lookup_list
  * @param {HTMLElement} container
- * @param {LookupListOptions} opts
+ * @param {import('smart-types').LookupListOptions} opts
  * @returns {Promise<HTMLElement>}
  */
 export async function post_process(lookup_list, container, opts = {}) {
