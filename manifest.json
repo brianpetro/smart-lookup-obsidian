@@ -2,9 +2,9 @@
   "id": "smart-lookup",
   "name": "Smart Lookup",
   "author": "Brian Petro",
-  "description": "Semantic search for your vault. Ask questions and find notes by meaning.",
+  "description": "Semantic search for your vault. Ask in natural language, find notes by meaning when exact words fail, preview matching notes, and turn forgotten ideas into links, context, and next steps.",
   "minAppVersion": "1.1.0",
   "authorUrl": "https://smartconnections.app",
   "isDesktopOnly": false,
-  "version": "0.1.4"
+  "version": "0.1.5"
 }
