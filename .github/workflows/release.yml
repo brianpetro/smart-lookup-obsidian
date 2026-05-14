@@ -16,6 +16,11 @@ on:
         required: false
         default: ''
         type: string
+      attest_release_assets:
+        description: Generate artifact attestations for built release assets.
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   release:
@@ -23,9 +28,13 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@0d25485bd7ec7833b268ae872f7fc11cb9782dcc
+      artifact-metadata: write
+
+    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@efe85abc6195a6a867fe4144b2d75d69e88c8a93
     with:
       obsidian_smart_env_ref: ${{ inputs.obsidian_smart_env_ref }}
       jsbrains_ref: ${{ inputs.jsbrains_ref }}
       release_flags: ${{ inputs.release_flags }}
+      attest_release_assets: ${{ inputs.attest_release_assets }}
+      dependency_owner: brianpetro
     secrets: inherit
