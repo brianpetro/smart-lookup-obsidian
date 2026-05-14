@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       release_flags:
-        description: Optional release.js flags, such as --draft or --replace-existing.
+        description: Optional release.js flags, such as --draft or --replace-existing. Do not include --use-existing-release-notes; the reusable workflow adds it.
         required: false
         default: ''
         type: string
@@ -23,7 +23,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@e74134eae20fbf97cdeda9b32a30b492b585a7d9
+    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@9f96fe5332df2db6dbe55e02348376ef21c96180
     with:
       obsidian_smart_env_ref: ${{ inputs.obsidian_smart_env_ref }}
       jsbrains_ref: ${{ inputs.jsbrains_ref }}
