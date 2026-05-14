@@ -1,6 +1,5 @@
 import esbuild from 'esbuild';
 import path from 'path';
-import 'dotenv/config';
 import { build_plugin } from 'obsidian-smart-env/build/build_plugin.js';
 
 /**
