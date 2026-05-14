@@ -23,7 +23,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
-    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@68fcf936b6d36bb2bda8888effc861daa7e31ab8
+    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@3e0eabad0441916299152e2cfdc32ff2ca1a2a3b
     with:
       obsidian_smart_env_ref: ${{ inputs.obsidian_smart_env_ref }}
       jsbrains_ref: ${{ inputs.jsbrains_ref }}
