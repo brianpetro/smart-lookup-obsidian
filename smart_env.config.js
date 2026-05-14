@@ -18,9 +18,9 @@ export const smart_env_config = {
 
   },
   components: {
-    lookup_item_view: { render: lookup_item_view_component, version: "2.4.3" },
-    lookup_v3_list: { render: lookup_v3_list_component, version: "2.4.3" },
-    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "2.4.3" }
+    lookup_item_view: { render: lookup_item_view_component, version: "2.4.5" },
+    lookup_v3_list: { render: lookup_v3_list_component, version: "2.4.5" },
+    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "2.4.5" }
   },
   actions: {
 
