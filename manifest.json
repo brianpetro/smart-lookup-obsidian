@@ -2,7 +2,7 @@
   "id": "smart-lookup",
   "name": "Smart Lookup",
   "author": "Brian Petro",
-  "description": "Query-first semantic search for your Obsidian vault.",
+  "description": "Semantic search for your vault. Ask questions and find notes by meaning.",
   "minAppVersion": "1.1.0",
   "authorUrl": "https://smartconnections.app",
   "isDesktopOnly": false,
