@@ -59,7 +59,7 @@ export async function post_process(view, container, params = {}) {
 
   const render_info_state = () => {
     this.empty(list_container);
-    list_container.innerHTML = `<p>${INFO}</p>`;
+    this.safe_inner_html(list_container, `<p>${INFO}</p>`);
   };
 
   const sync_form_state = () => {
