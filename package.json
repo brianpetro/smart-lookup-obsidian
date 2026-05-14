@@ -1,6 +1,6 @@
 {
   "name": "smart-lookup-obsidian",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "description": "Smart Lookup plugin for Obsidian (query-first semantic retrieval).",
   "scripts": {
