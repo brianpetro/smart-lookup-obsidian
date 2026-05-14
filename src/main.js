@@ -5,8 +5,14 @@ import { LookupItemView } from './views/lookup_item_view.js';
 import { ReleaseNotesView } from './views/release_notes_view.js';
 
 export default class SmartLookupPlugin extends SmartPlugin {
+  /** @type {typeof SmartEnv} */
   SmartEnv = SmartEnv;
+  /** @type {typeof ReleaseNotesView} */
   ReleaseNotesView = ReleaseNotesView;
+  /** @type {typeof SmartLookupSettingsTab} */
+  LookupSettingsTab = SmartLookupSettingsTab;
+  /** @type {import('obsidian-smart-env').SmartEnvConfig|null} */
+  _smart_env_config = null;
 
   get smart_env_config() {
     if (!this._smart_env_config) {
@@ -14,8 +20,6 @@ export default class SmartLookupPlugin extends SmartPlugin {
     }
     return this._smart_env_config;
   }
-
-  LookupSettingsTab = SmartLookupSettingsTab;
 
   get item_views() {
     return {
@@ -35,13 +39,21 @@ export default class SmartLookupPlugin extends SmartPlugin {
 
   onunload() {
     console.log('Unloading Smart Lookup plugin');
-    this.notices?.unload();
+    this.notices?.unload?.();
     this.env?.unload_main?.(this);
   }
 
   async initialize() {
     await this.SmartEnv.wait_for({ loaded: true });
     await this.check_for_updates();
+  }
+
+  /**
+   * @param {Record<string, unknown>} [params={}]
+   * @returns {void}
+   */
+  open_lookup_view(params = {}) {
+    LookupItemView.open(this.app.workspace, params);
   }
 
   get ribbon_icons() {

@@ -8,6 +8,8 @@
     "target": "ES2022"
   },
   "include": [
+    "smart_env.config.d.ts",
+    "src/**/*.d.ts",
     "src/**/*.js",
     "src/**/*.ts",
     "manifest.json"

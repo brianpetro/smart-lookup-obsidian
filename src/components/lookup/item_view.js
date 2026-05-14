@@ -8,7 +8,24 @@ const AUTO_SUBMIT_LABEL = 'Auto-submit';
 const AUTO_SUBMIT_INFO = 'Automatically run lookup after you pause typing. Turn off to submit manually.';
 const SUBMIT_LABEL = 'Lookup';
 
-export async function build_html(view, params = {}) {
+/**
+ * @typedef {import('smart-types').LookupItemViewParams} LookupRenderParams
+ * @typedef {import('smart-types').LookupViewLike} LookupItemViewLike
+ * @typedef {import('smart-types').SmartViewRenderer} SmartViewLike
+ */
+
+/**
+ * @typedef {object} LookupViewState
+ * @property {string} last_query
+ * @property {number} active_request_id
+ */
+
+/**
+ * @param {LookupItemViewLike} _view
+ * @param {LookupRenderParams} params
+ * @returns {Promise<string>}
+ */
+export async function build_html(_view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
   return `<div><div class="lookup-item-view">
     <form class="lookup-query-form" novalidate>
@@ -40,22 +57,36 @@ export async function build_html(view, params = {}) {
   </div></div>`;
 }
 
+/**
+ * @this {SmartViewLike}
+ * @param {LookupItemViewLike} view
+ * @param {LookupRenderParams} params
+ * @returns {Promise<HTMLElement>}
+ */
 export async function render(view, params = {}) {
-  this.apply_style_sheet(styles_css);
-  const html = await build_html.call(this, view, params);
+  this.apply_style_sheet?.(styles_css);
+  const html = await build_html(view, params);
   const frag = this.create_doc_fragment(html);
-  const container = frag.querySelector('.lookup-item-view');
+  const container = query_required_element(frag, '.lookup-item-view');
   post_process.call(this, view, container, params);
   return container;
 }
 
+/**
+ * @this {SmartViewLike}
+ * @param {LookupItemViewLike} view
+ * @param {HTMLElement} container
+ * @param {LookupRenderParams} params
+ * @returns {Promise<HTMLElement>}
+ */
 export async function post_process(view, container, params = {}) {
-  const query_input = container.querySelector('.lookup-query-input');
-  const query_form = container.querySelector('.lookup-query-form');
-  const auto_submit_input = container.querySelector('.lookup-query-auto-submit');
-  const submit_btn = container.querySelector('.lookup-query-submit');
-  const list_container = container.querySelector('.smart-lookup-list-container');
-  const state = { last_query: null, active_request_id: 0 };
+  const query_input = query_required_textarea(container, '.lookup-query-input');
+  const query_form = query_required_form(container, '.lookup-query-form');
+  const auto_submit_input = query_required_checkbox(container, '.lookup-query-auto-submit');
+  const submit_btn = query_required_button(container, '.lookup-query-submit');
+  const list_container = query_required_element(container, '.smart-lookup-list-container');
+  /** @type {LookupViewState} */
+  const state = { last_query: '', active_request_id: 0 };
 
   const render_info_state = () => {
     this.empty(list_container);
@@ -69,13 +100,17 @@ export async function post_process(view, container, params = {}) {
     return query;
   };
 
+  /**
+   * @param {string} raw_query
+   * @returns {Promise<void>}
+   */
   const submit_query = async (raw_query) => {
     const query = sanitize_query(raw_query);
     const request_id = ++state.active_request_id;
     update_query_validity({ input_el: query_input, query });
     update_submit_state({ submit_btn, query });
     if (!query) {
-      state.last_query = null;
+      state.last_query = '';
       render_info_state();
       return;
     }
@@ -95,12 +130,12 @@ export async function post_process(view, container, params = {}) {
   query_input.addEventListener('input', () => {
     const query = sync_form_state();
     if (!query) {
-      debounced_submit.cancel?.();
-      submit_query(query);
+      debounced_submit.cancel();
+      void submit_query(query);
       return;
     }
     if (!auto_submit_input.checked) {
-      debounced_submit.cancel?.();
+      debounced_submit.cancel();
       return;
     }
     debounced_submit(query);
@@ -109,7 +144,7 @@ export async function post_process(view, container, params = {}) {
   auto_submit_input.addEventListener('change', () => {
     const query = sync_form_state();
     if (!auto_submit_input.checked) {
-      debounced_submit.cancel?.();
+      debounced_submit.cancel();
       return;
     }
     if (query) debounced_submit(query);
@@ -118,21 +153,84 @@ export async function post_process(view, container, params = {}) {
   query_form.addEventListener('submit', (event) => {
     event.preventDefault();
     const query = sync_form_state();
-    debounced_submit.cancel?.();
-    submit_query(query);
+    debounced_submit.cancel();
+    void submit_query(query);
   });
 
   sync_form_state();
   return container;
 }
 
+/**
+ * @param {{ input_el: HTMLInputElement | HTMLTextAreaElement | null, query: string }} params
+ * @returns {void}
+ */
 export function update_query_validity({ input_el, query }) {
   if (!input_el?.setCustomValidity) return;
   if (!query) input_el.setCustomValidity(REQUIRED_MESSAGE);
   else input_el.setCustomValidity('');
 }
 
+/**
+ * @param {{ submit_btn: HTMLButtonElement | null, query: string }} params
+ * @returns {void}
+ */
 export function update_submit_state({ submit_btn, query }) {
   if (!submit_btn) return;
   submit_btn.disabled = !query;
+}
+
+/**
+ * @param {ParentNode} container
+ * @param {string} selector
+ * @returns {HTMLElement}
+ */
+function query_required_element(container, selector) {
+  const element = container.querySelector(selector);
+  if (element instanceof HTMLElement) return element;
+  throw new Error(`Missing required lookup element: ${selector}`);
+}
+
+/**
+ * @param {ParentNode} container
+ * @param {string} selector
+ * @returns {HTMLTextAreaElement}
+ */
+function query_required_textarea(container, selector) {
+  const element = container.querySelector(selector);
+  if (element instanceof HTMLTextAreaElement) return element;
+  throw new Error(`Missing required lookup textarea: ${selector}`);
+}
+
+/**
+ * @param {ParentNode} container
+ * @param {string} selector
+ * @returns {HTMLFormElement}
+ */
+function query_required_form(container, selector) {
+  const element = container.querySelector(selector);
+  if (element instanceof HTMLFormElement) return element;
+  throw new Error(`Missing required lookup form: ${selector}`);
+}
+
+/**
+ * @param {ParentNode} container
+ * @param {string} selector
+ * @returns {HTMLInputElement}
+ */
+function query_required_checkbox(container, selector) {
+  const element = container.querySelector(selector);
+  if (element instanceof HTMLInputElement && element.type === 'checkbox') return element;
+  throw new Error(`Missing required lookup checkbox: ${selector}`);
+}
+
+/**
+ * @param {ParentNode} container
+ * @param {string} selector
+ * @returns {HTMLButtonElement}
+ */
+function query_required_button(container, selector) {
+  const element = container.querySelector(selector);
+  if (element instanceof HTMLButtonElement) return element;
+  throw new Error(`Missing required lookup button: ${selector}`);
 }
