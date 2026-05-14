@@ -1,0 +1,31 @@
+name: Release Smart Plugin Core
+
+on:
+  workflow_dispatch:
+    inputs:
+      obsidian_smart_env_ref:
+        description: Full commit SHA for brianpetro/obsidian-smart-env.
+        required: true
+        type: string
+      jsbrains_ref:
+        description: Full commit SHA for brianpetro/jsbrains.
+        required: true
+        type: string
+      release_flags:
+        description: Optional release.js flags, such as --draft or --replace-existing.
+        required: false
+        default: ''
+        type: string
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    uses: brianpetro/obsidian-smart-env/.github/workflows/release-smart-plugin.yml@e74134eae20fbf97cdeda9b32a30b492b585a7d9
+    with:
+      obsidian_smart_env_ref: ${{ inputs.obsidian_smart_env_ref }}
+      jsbrains_ref: ${{ inputs.jsbrains_ref }}
+      release_flags: ${{ inputs.release_flags }}
+    secrets: inherit
