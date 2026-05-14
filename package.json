@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Smart Lookup plugin for Obsidian (query-first semantic retrieval). Ask questions and find notes by meaning.",
   "scripts": {
-    "build": "node --env-file=.env esbuild.js",
+    "build": "node esbuild.js",
     "release": "node release.js",
     "prepare-release": "node --env-file=.env releases/run_format_release_notes.js",
     "test": "npx ava --verbose"
