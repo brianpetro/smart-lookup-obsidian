@@ -8,15 +8,15 @@ const DEFAULT_DEBOUNCE_MS = 300;
 export function create_debounced_submit(handler, delay = DEFAULT_DEBOUNCE_MS) {
   let timeout_id;
   const schedule = (value) => {
-    if (timeout_id) clearTimeout(timeout_id);
-    timeout_id = setTimeout(() => {
+    if (timeout_id) window.clearTimeout(timeout_id);
+    timeout_id = window.setTimeout(() => {
       timeout_id = undefined;
       handler(value);
     }, delay);
   };
   schedule.cancel = () => {
     if (timeout_id) {
-      clearTimeout(timeout_id);
+      window.clearTimeout(timeout_id);
       timeout_id = undefined;
     }
   };
