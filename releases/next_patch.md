@@ -1,1 +1,2 @@
-fix: refine CSS selectors and remove unnecessary !important declarations
+-Refines CSS selectors and remove unnecessary !important declarations
+- Updated Smart Environment to `v2.4.6` for handling Obsidian API changes
