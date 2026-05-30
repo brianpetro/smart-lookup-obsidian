@@ -1,7 +1,8 @@
 # Introducing Smart Lookup Core `v0.1`
 
-> [!NOTE] What's new in `v0.1.6`
-> refactor: remove unused dependencies and improve HTML rendering safety
+> [!NOTE] What's new in `v0.1.7`
+> -Refines CSS selectors and remove unnecessary !important declarations
+> - Updated Smart Environment to `v2.4.6` for handling Obsidian API changes
 
 Smart Lookup is now its own Core plugin for Obsidian.
 
@@ -31,6 +32,6 @@ That makes the workflow easier to explain and easier to choose:
 - Smart Lookup searches by meaning from a question or idea.
 - Obsidian search handles exact phrases, filenames, headings, tags, and operators.
 
-Updated: 2026-05-14
+Updated: 2026-05-30
 
 [More details about the latest releases](https://smartconnections.app/smart-lookup/releases/0-1/)
