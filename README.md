@@ -278,7 +278,7 @@ Lookup retrieves by meaning, so it can surface notes that use different vocabula
 
 ### Should I trust the top result?
 
-Preview before trusting it.
+Preview first.
 
 The top result is a candidate to inspect first, not a guarantee of truth.
 
