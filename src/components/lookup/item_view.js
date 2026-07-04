@@ -1,5 +1,9 @@
 import styles_css from './item_view.css';
 import { create_debounced_submit, sanitize_query } from '../../utils/lookup_query_utils.js';
+import {
+  build_lookup_list_menu,
+  show_menu,
+} from './v3/list.js';
 
 const REQUIRED_MESSAGE = 'Enter a lookup query to continue.';
 const PLACEHOLDER = 'Describe the idea, topic, or question you want to explore…';
@@ -10,7 +14,23 @@ const SUBMIT_LABEL = 'Lookup';
 
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
+  const menu_icon = typeof this.get_icon_html === 'function'
+    ? this.get_icon_html('menu')
+    : ''
+  ;
+
   return `<div><div class="lookup-item-view">
+    <div class="lookup-top-bar">
+      <div class="lookup-actions">
+        <button
+          class="clickable-icon lookup-menu-button"
+          type="button"
+          aria-label="More actions"
+          data-action="open-menu"
+          disabled
+        >${menu_icon}</button>
+      </div>
+    </div>
     <form class="lookup-query-form" novalidate>
       <label class="lookup-query-label" for="lookup-query-input" title="${INFO}">Smart Lookup</label>
       <textarea
@@ -54,8 +74,46 @@ export async function post_process(view, container, params = {}) {
   const query_form = container.querySelector('.lookup-query-form');
   const auto_submit_input = container.querySelector('.lookup-query-auto-submit');
   const submit_btn = container.querySelector('.lookup-query-submit');
+  const menu_button = container.querySelector('[data-action="open-menu"]');
   const list_container = container.querySelector('.smart-lookup-list-container');
-  const state = { last_query: null, active_request_id: 0 };
+  const app = view?.plugin?.app
+    || view?.app
+    || view?.env?.plugin?.app
+    || view?.env?.obsidian_app
+    || globalThis.app
+    || null
+  ;
+  const state = {
+    last_query: null,
+    active_request_id: 0,
+    lookup_list: null,
+    menu_params: null,
+  };
+
+  const update_menu_state = () => {
+    if (!menu_button) return;
+    menu_button.disabled = !state.lookup_list;
+  };
+
+  const open_lookup_menu = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!state.lookup_list) return;
+
+    const menu = build_lookup_list_menu(state.lookup_list, {
+      ...(state.menu_params || params),
+      event,
+    });
+    if (!menu) return;
+
+    show_menu(menu, event, menu_button);
+  };
+
+  menu_button?.addEventListener('click', open_lookup_menu);
+  menu_button?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    open_lookup_menu(event);
+  });
 
   const render_info_state = () => {
     this.empty(list_container);
@@ -76,14 +134,33 @@ export async function post_process(view, container, params = {}) {
     update_submit_state({ submit_btn, query });
     if (!query) {
       state.last_query = null;
+      state.lookup_list = null;
+      state.menu_params = null;
+      update_menu_state();
       render_info_state();
       return;
     }
     if (query === state.last_query) return;
     state.last_query = query;
-    const next_params = { ...params, query, auto_submit: auto_submit_input.checked };
+    const next_params = {
+      ...params,
+      query,
+      auto_submit: auto_submit_input.checked,
+      view,
+      app,
+      workspace: app?.workspace,
+      container,
+    };
     const lookup_list = view.env.lookup_lists.new_item(next_params);
-    const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, next_params);
+    const results = await lookup_list.get_results(next_params);
+    if (request_id !== state.active_request_id) return;
+    if (sanitize_query(query_input.value) !== query) return;
+
+    state.lookup_list = lookup_list;
+    state.menu_params = { ...next_params, results };
+    update_menu_state();
+
+    const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, state.menu_params);
     if (request_id !== state.active_request_id) return;
     if (sanitize_query(query_input.value) !== query) return;
     this.empty(list_container);
@@ -122,6 +199,7 @@ export async function post_process(view, container, params = {}) {
     submit_query(query);
   });
 
+  update_menu_state();
   sync_form_state();
   return container;
 }

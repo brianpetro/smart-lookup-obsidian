@@ -1,12 +1,92 @@
 /* global styles */
 
 /* below needs review since not scoped */
-div.workspace-leaf-content[data-type^="smart-"] {
-  > .view-content {
-    display: flex;
-    flex-direction: column;
-  }
+div.workspace-leaf-content[data-type^="smart-"] > .view-content {
+  display: flex;
+  flex-direction: column;
 }
+
+.lookup-item-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lookup-item-view .lookup-top-bar {
+  display: flex;
+  width: 100%;
+  justify-content: end;
+}
+
+.lookup-item-view .lookup-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lookup-item-view .lookup-query-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lookup-item-view .lookup-query-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.lookup-item-view .lookup-query-input {
+  resize: vertical;
+  min-height: 5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-m);
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.lookup-item-view .lookup-query-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 30%, transparent);
+}
+
+.lookup-item-view .lookup-query-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.lookup-item-view .lookup-query-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.lookup-item-view .lookup-query-toggle input {
+  margin: 0;
+}
+
+.lookup-item-view .lookup-query-submit {
+  margin-left: auto;
+}
+
+.lookup-item-view .smart-lookup-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .sc-no-results {
   color: var(--text-muted);
   margin-top: 0.75rem;

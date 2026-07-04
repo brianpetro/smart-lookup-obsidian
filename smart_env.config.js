@@ -6,6 +6,9 @@ import { render as lookup_item_view_component } from './src/components/lookup/it
 import { render as lookup_v3_list_component } from './src/components/lookup/v3/list.js';
 import { render as lookup_v3_list_item_component, settings_config as lookup_v3_list_item_component_settings_config } from './src/components/lookup/v3/list_item.js';
 
+import { lookup_list_send_to_smart_context as lookup_list_send_to_smart_context_action, menus as lookup_list_send_to_smart_context_action_menus, version as lookup_list_send_to_smart_context_action_version } from './src/actions/lookup-list/send_to_smart_context.js';
+import { lookup_list_send_to_smart_graph as lookup_list_send_to_smart_graph_action, menus as lookup_list_send_to_smart_graph_action_menus, version as lookup_list_send_to_smart_graph_action_version } from './src/actions/lookup-list/send_to_smart_graph.js';
+
 
 export const smart_env_config = {
   collections: {
@@ -23,6 +26,7 @@ export const smart_env_config = {
     lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "2.4.6" }
   },
   actions: {
-
+    lookup_list_send_to_smart_context: { action: lookup_list_send_to_smart_context_action, menus: lookup_list_send_to_smart_context_action_menus, version: lookup_list_send_to_smart_context_action_version },
+    lookup_list_send_to_smart_graph: { action: lookup_list_send_to_smart_graph_action, menus: lookup_list_send_to_smart_graph_action_menus, version: lookup_list_send_to_smart_graph_action_version }
   }
 };

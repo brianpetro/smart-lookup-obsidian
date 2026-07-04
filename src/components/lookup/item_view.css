@@ -4,6 +4,20 @@
   gap: 1rem;
 }
 
+.lookup-item-view .lookup-top-bar {
+  display: flex;
+  width: 100%;
+  justify-content: end;
+}
+
+.lookup-item-view .lookup-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .lookup-item-view .lookup-query-form {
   display: flex;
   flex-direction: column;
@@ -64,3 +78,4 @@
   flex-direction: column;
   gap: 0.5rem;
 }
+

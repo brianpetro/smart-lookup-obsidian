@@ -2,6 +2,10 @@ import { DISPLAY_SEPARATOR, get_item_display_name } from 'obsidian-smart-env/src
 import { register_item_hover_popover } from 'obsidian-smart-env/src/utils/register_item_hover_popover.js';
 import { register_item_drag } from 'obsidian-smart-env/src/utils/register_item_drag.js';
 import { open_source } from "obsidian-smart-env/src/utils/open_source.js";
+import {
+  build_lookup_list_menu,
+  show_menu,
+} from './list.js';
 
 
 /**
@@ -101,6 +105,22 @@ export async function post_process(result_scope, container, params = {}) {
   container.addEventListener('click', (event) => {
     open_source(item, event);
     item.emit_event(`${event_key_domain}:open_result`, { event_source: 'lookup-v3-list-item' });
+  });
+  container.addEventListener('contextmenu', (event) => {
+    if (!params.lookup_list) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const menu = build_lookup_list_menu(params.lookup_list, {
+      ...params,
+      event,
+      target_item: item,
+      target_result: result_scope,
+    });
+    if (!menu) return;
+
+    show_menu(menu, event, container);
   });
 
   const observer = new MutationObserver((mutations) => {
