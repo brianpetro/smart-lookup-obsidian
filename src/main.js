@@ -28,9 +28,7 @@ export default class SmartLookupPlugin extends SmartPlugin {
     this.app.workspace.onLayoutReady(this.initialize.bind(this));
     this.SmartEnv.create(this, this.smart_env_config);
     this.addSettingTab(new this.LookupSettingsTab(this.app, this, 'smart-lookup'));
-    this.register_commands();
-    this.register_item_views();
-    this.register_ribbon_icons();
+    this.register_item_views({ skip_command_registration: true });
   }
 
   onunload() {
@@ -40,19 +38,9 @@ export default class SmartLookupPlugin extends SmartPlugin {
   }
 
   async initialize() {
+    this.register_ribbon_actions();
     await this.SmartEnv.wait_for({ loaded: true });
+    this.register_command_actions();
     await this.check_for_updates();
-  }
-
-  get ribbon_icons() {
-    return {
-      lookup: {
-        icon_name: 'smart-lookup',
-        description: 'Smart Lookup: Open lookup view',
-        callback: () => {
-          this.open_lookup_view();
-        }
-      }
-    };
   }
 }

@@ -8,6 +8,7 @@ import { render as lookup_v3_list_item_component, settings_config as lookup_v3_l
 
 import { lookup_list_send_to_smart_context as lookup_list_send_to_smart_context_action, menus as lookup_list_send_to_smart_context_action_menus, version as lookup_list_send_to_smart_context_action_version } from './src/actions/lookup-list/send_to_smart_context.js';
 import { lookup_list_send_to_smart_graph as lookup_list_send_to_smart_graph_action, menus as lookup_list_send_to_smart_graph_action_menus, version as lookup_list_send_to_smart_graph_action_version } from './src/actions/lookup-list/send_to_smart_graph.js';
+import { lookup_open_view as lookup_open_view_action, commands as lookup_open_view_action_commands, ribbon_icons as lookup_open_view_action_ribbon_icons } from './src/actions/lookup/open_view.js';
 
 
 export const smart_env_config = {
@@ -27,6 +28,7 @@ export const smart_env_config = {
   },
   actions: {
     lookup_list_send_to_smart_context: { action: lookup_list_send_to_smart_context_action, menus: lookup_list_send_to_smart_context_action_menus, version: lookup_list_send_to_smart_context_action_version },
-    lookup_list_send_to_smart_graph: { action: lookup_list_send_to_smart_graph_action, menus: lookup_list_send_to_smart_graph_action_menus, version: lookup_list_send_to_smart_graph_action_version }
+    lookup_list_send_to_smart_graph: { action: lookup_list_send_to_smart_graph_action, menus: lookup_list_send_to_smart_graph_action_menus, version: lookup_list_send_to_smart_graph_action_version },
+    lookup_open_view: { action: lookup_open_view_action, commands: lookup_open_view_action_commands, ribbon_icons: lookup_open_view_action_ribbon_icons, version: "2.4.6" }
   }
 };
