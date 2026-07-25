@@ -11,6 +11,7 @@ const INFO = 'Use semantic (embeddings) search to surface relevant notes. Result
 const AUTO_SUBMIT_LABEL = 'Auto-submit';
 const AUTO_SUBMIT_INFO = 'Automatically run lookup after you pause typing. Turn off to submit manually.';
 const SUBMIT_LABEL = 'Lookup';
+const MODEL_LOADING_MESSAGE = 'Loading the embedding model. This lookup will run automatically when it is ready.';
 
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
@@ -120,6 +121,14 @@ export async function post_process(view, container, params = {}) {
     this.safe_inner_html(list_container, `<p>${INFO}</p>`);
   };
 
+  const render_model_loading_state = () => {
+    this.empty(list_container);
+    this.safe_inner_html(list_container, `<div role="status" aria-live="polite">
+      <progress></progress>
+      <span>${MODEL_LOADING_MESSAGE}</span>
+    </div>`);
+  };
+
   const sync_form_state = () => {
     const query = sanitize_query(query_input.value);
     update_query_validity({ input_el: query_input, query });
@@ -129,10 +138,10 @@ export async function post_process(view, container, params = {}) {
 
   const submit_query = async (raw_query) => {
     const query = sanitize_query(raw_query);
-    const request_id = ++state.active_request_id;
     update_query_validity({ input_el: query_input, query });
     update_submit_state({ submit_btn, query });
     if (!query) {
+      ++state.active_request_id;
       state.last_query = null;
       state.lookup_list = null;
       state.menu_params = null;
@@ -141,7 +150,7 @@ export async function post_process(view, container, params = {}) {
       return;
     }
     if (query === state.last_query) return;
-    state.last_query = query;
+    const request_id = ++state.active_request_id;
     const next_params = {
       ...params,
       query,
@@ -151,6 +160,24 @@ export async function post_process(view, container, params = {}) {
       workspace: app?.workspace,
       container,
     };
+
+    const embed_model = view.env.smart_sources.embed_model;
+    if (!embed_model.is_loaded) {
+      render_model_loading_state();
+      await embed_model.load_background();
+      if (request_id !== state.active_request_id) return;
+      if (sanitize_query(query_input.value) !== query) {
+        render_info_state();
+        return;
+      }
+      if (!embed_model.is_loaded) {
+        this.empty(list_container);
+        this.safe_inner_html(list_container, '<p role="alert">The embedding model could not be loaded. Submit the lookup again to retry.</p>');
+        return;
+      }
+    }
+
+    state.last_query = query;
     const lookup_list = view.env.lookup_lists.new_item(next_params);
     const results = await lookup_list.get_results(next_params);
     if (request_id !== state.active_request_id) return;
