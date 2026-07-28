@@ -179,7 +179,7 @@ export async function post_process(view, container, params = {}) {
 
     state.last_query = query;
     const lookup_list = view.env.lookup_lists.new_item(next_params);
-    const results = await lookup_list.get_results(next_params);
+    const results = await lookup_list.actions.lookup_list_get_results(next_params);
     if (request_id !== state.active_request_id) return;
     if (sanitize_query(query_input.value) !== query) return;
 

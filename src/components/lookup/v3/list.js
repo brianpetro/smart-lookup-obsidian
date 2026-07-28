@@ -19,7 +19,7 @@ export async function post_process(lookup_list, container, opts = {}) {
   container.dataset.key = lookup_list.key;
   const results = Array.isArray(opts.results)
     ? opts.results
-    : await lookup_list.get_results(opts)
+    : await lookup_list.actions.lookup_list_get_results(opts)
   ;
   const menu_params = {
     ...opts,
