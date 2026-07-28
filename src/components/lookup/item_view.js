@@ -12,6 +12,8 @@ const AUTO_SUBMIT_LABEL = 'Auto-submit';
 const AUTO_SUBMIT_INFO = 'Automatically run lookup after you pause typing. Turn off to submit manually.';
 const SUBMIT_LABEL = 'Lookup';
 const MODEL_LOADING_MESSAGE = 'Loading the embedding model. This lookup will run automatically when it is ready.';
+const QUERYING_MESSAGE = 'Querying...';
+const LOOKUP_ERROR_MESSAGE = 'Lookup failed. Submit the lookup again to retry.';
 
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
@@ -117,16 +119,33 @@ export async function post_process(view, container, params = {}) {
   });
 
   const render_info_state = () => {
+    list_container.setAttribute('aria-busy', 'false');
     this.empty(list_container);
     this.safe_inner_html(list_container, `<p>${INFO}</p>`);
   };
 
   const render_model_loading_state = () => {
+    list_container.setAttribute('aria-busy', 'true');
     this.empty(list_container);
-    this.safe_inner_html(list_container, `<div role="status" aria-live="polite">
-      <progress></progress>
+    this.safe_inner_html(list_container, `<div class="lookup-query-status" role="status" aria-live="polite">
+      <progress aria-hidden="true"></progress>
       <span>${MODEL_LOADING_MESSAGE}</span>
     </div>`);
+  };
+
+  const render_querying_state = () => {
+    list_container.setAttribute('aria-busy', 'true');
+    this.empty(list_container);
+    this.safe_inner_html(list_container, `<div class="lookup-query-status" role="status" aria-live="polite">
+      <progress aria-hidden="true"></progress>
+      <span>${QUERYING_MESSAGE}</span>
+    </div>`);
+  };
+
+  const render_lookup_error_state = () => {
+    list_container.setAttribute('aria-busy', 'false');
+    this.empty(list_container);
+    this.safe_inner_html(list_container, `<p role="alert">${LOOKUP_ERROR_MESSAGE}</p>`);
   };
 
   const sync_form_state = () => {
@@ -171,6 +190,7 @@ export async function post_process(view, container, params = {}) {
         return;
       }
       if (!embed_model.is_loaded) {
+        list_container.setAttribute('aria-busy', 'false');
         this.empty(list_container);
         this.safe_inner_html(list_container, '<p role="alert">The embedding model could not be loaded. Submit the lookup again to retry.</p>');
         return;
@@ -178,10 +198,34 @@ export async function post_process(view, container, params = {}) {
     }
 
     state.last_query = query;
+    state.lookup_list = null;
+    state.menu_params = null;
+    update_menu_state();
+
     const lookup_list = view.env.lookup_lists.new_item(next_params);
-    const results = await lookup_list.actions.lookup_list_get_results(next_params);
+    render_querying_state();
+
+    let results;
+    try {
+      results = await lookup_list.actions.lookup_list_get_results(next_params);
+    } catch (error) {
+      if (request_id !== state.active_request_id) return;
+      if (sanitize_query(query_input.value) !== query) {
+        state.last_query = null;
+        render_info_state();
+        return;
+      }
+      state.last_query = null;
+      render_lookup_error_state();
+      console.error('Lookup failed', error);
+      return;
+    }
     if (request_id !== state.active_request_id) return;
-    if (sanitize_query(query_input.value) !== query) return;
+    if (sanitize_query(query_input.value) !== query) {
+      state.last_query = null;
+      render_info_state();
+      return;
+    }
 
     state.lookup_list = lookup_list;
     state.menu_params = { ...next_params, results };
@@ -189,9 +233,17 @@ export async function post_process(view, container, params = {}) {
 
     const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, state.menu_params);
     if (request_id !== state.active_request_id) return;
-    if (sanitize_query(query_input.value) !== query) return;
+    if (sanitize_query(query_input.value) !== query) {
+      state.last_query = null;
+      state.lookup_list = null;
+      state.menu_params = null;
+      update_menu_state();
+      render_info_state();
+      return;
+    }
     this.empty(list_container);
     list_container.appendChild(rendered_list);
+    list_container.setAttribute('aria-busy', 'false');
   };
 
   const debounced_submit = create_debounced_submit(submit_query);
