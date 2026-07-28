@@ -2,3 +2,6 @@ Added: menus to Lookup interface for integration with Context, Graph, and other 
 
 
 Add loading state for embedding model in lookup process
+
+
+Refactor: Update lookup result retrieval to use actions for configurable behavior and improved flexibility
