@@ -21,6 +21,8 @@ Smart Lookup helps you ask a plain-language question, scan semantic matches from
 
 ![Smart Lookup view](https://smartconnections.app/assets/Lookup-item-view-annotated-new-2025-12-09.png)
 
+![lookup-natural-language-ranked-results-editorial-hero-reviewed-1280x720-2026-07-29](images/lookup-natural-language-ranked-results-editorial-hero-reviewed-1280x720-2026-07-29.png)
+
 ## What Smart Lookup does
 
 Smart Lookup searches by meaning instead of exact word overlap.
@@ -55,6 +57,8 @@ Use Smart Connections when:
 5. Type one plain-language query.
 6. Expand one or two promising results.
 7. Open, link, copy, or use the best match in your next workflow.
+
+![lookup-core-semantic-search-empty-entry-current-highlighted-docs-native-desktop-dark-publication-srgb-077b79a782ed-2026-07-29](images/lookup-core-semantic-search-empty-entry-current-highlighted-docs-native-desktop-dark-publication-srgb-077b79a782ed-2026-07-29.png)
 
 You know it worked when:
 
@@ -131,6 +135,8 @@ Use this loop:
 4. Open the best match when you need the full source.
 5. Link it, copy it, or package it with Smart Context if it should feed AI work.
 
+![lookup-ranked-results-expanded-documentation-1280x720-desktop-2026-07-30](images/lookup-ranked-results-expanded-documentation-1280x720-desktop-2026-07-30.png)
+
 Treat score and rank as signals. They help you decide what to inspect first, but they do not prove that the top result is the right result.
 
 ## When results are weak
@@ -172,6 +178,8 @@ After you find a useful result, you can:
 - build a reading trail
 - copy the relevant note or result set into your AI tool
 - use Smart Context to create a reviewable context bundle
+
+![lookup-list-menu-core-crop-highlighted-desktop-2026-07-27](images/lookup-list-menu-core-crop-highlighted-desktop-2026-07-27.png)
 
 Prompt starter after packaging notes as context:
 
@@ -278,7 +286,7 @@ Lookup retrieves by meaning, so it can surface notes that use different vocabula
 
 ### Should I trust the top result?
 
-Preview first.
+Preview.
 
 The top result is a candidate to inspect first, not a guarantee of truth.
 
