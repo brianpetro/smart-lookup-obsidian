@@ -23,14 +23,14 @@ export const smart_env_config = {
 
   },
   components: {
-    lookup_item_view: { render: lookup_item_view_component, version: "2.4.6" },
-    lookup_v3_list: { render: lookup_v3_list_component, version: "2.4.6" },
-    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "2.4.6" }
+    lookup_item_view: { render: lookup_item_view_component, version: "3.1.0" },
+    lookup_v3_list: { render: lookup_v3_list_component, version: "3.1.0" },
+    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "3.1.0" }
   },
   actions: {
-    lookup_list_query: { action: lookup_list_query_action, display_name: lookup_list_query_action_display_name, display_description: lookup_list_query_action_display_description, action_scope: lookup_list_query_action_action_scope, tool: lookup_list_query_action_tool, input_schema: lookup_list_query_action_input_schema, output_schema: lookup_list_query_action_output_schema, version: "2.4.6" },
+    lookup_list_query: { action: lookup_list_query_action, display_name: lookup_list_query_action_display_name, display_description: lookup_list_query_action_display_description, action_scope: lookup_list_query_action_action_scope, tool: lookup_list_query_action_tool, input_schema: lookup_list_query_action_input_schema, output_schema: lookup_list_query_action_output_schema, version: "3.1.0" },
     lookup_list_send_to_smart_context: { action: lookup_list_send_to_smart_context_action, menus: lookup_list_send_to_smart_context_action_menus, version: lookup_list_send_to_smart_context_action_version },
     lookup_list_send_to_smart_graph: { action: lookup_list_send_to_smart_graph_action, menus: lookup_list_send_to_smart_graph_action_menus, version: lookup_list_send_to_smart_graph_action_version },
-    lookup_open_view: { action: lookup_open_view_action, commands: lookup_open_view_action_commands, ribbon_icons: lookup_open_view_action_ribbon_icons, menus: lookup_open_view_action_menus, version: "2.4.6" }
+    lookup_open_view: { action: lookup_open_view_action, commands: lookup_open_view_action_commands, ribbon_icons: lookup_open_view_action_ribbon_icons, menus: lookup_open_view_action_menus, version: "3.1.0" }
   }
 };
