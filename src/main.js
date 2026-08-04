@@ -3,6 +3,7 @@ import { smart_env_config } from '../smart_env.config.js';
 import { SmartLookupSettingsTab } from './views/settings_tab.js';
 import { LookupItemView } from './views/lookup_item_view.js';
 import { ReleaseNotesView } from './views/release_notes_view.js';
+import { sanitize_query } from './utils/lookup_query_utils.js';
 
 export default class SmartLookupPlugin extends SmartPlugin {
   SmartEnv = SmartEnv;
@@ -37,10 +38,25 @@ export default class SmartLookupPlugin extends SmartPlugin {
     this.env?.unload_main?.(this);
   }
 
+  register_editor_menu() {
+    this.registerEvent(this.app.workspace.on('editor-menu', (menu, editor) => {
+      this.env.build_menu(
+        'lookup:editor_menu',
+        menu,
+        this.env.lookup_lists,
+        {
+          plugin: this,
+          query: sanitize_query(editor.getSelection()),
+        },
+      );
+    }));
+  }
+
   async initialize() {
     this.register_ribbon_actions();
     await this.SmartEnv.wait_for({ loaded: true });
     this.register_command_actions();
+    this.register_editor_menu();
     await this.check_for_updates();
   }
 }

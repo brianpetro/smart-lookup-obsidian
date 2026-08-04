@@ -235,6 +235,7 @@ Smart Lookup is source-available under the Smart Plugins License.
 | Command | Use |
 | --- | --- |
 | `Open: Lookup view` | Opens the Smart Lookup view. |
+| `Search selection with Smart Lookup` | Opens Lookup with the selected editor text and runs it as the query. The same action appears when right-clicking a non-empty editor selection. |
 
 Smart Lookup also adds a ribbon icon for opening the Lookup view.
 

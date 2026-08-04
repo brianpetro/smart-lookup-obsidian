@@ -279,7 +279,10 @@ export async function post_process(view, container, params = {}) {
   });
 
   update_menu_state();
+  const initial_query = sanitize_query(params.query);
+  query_input.value = initial_query;
   sync_form_state();
+  if (initial_query) void submit_query(initial_query);
   return container;
 }
 

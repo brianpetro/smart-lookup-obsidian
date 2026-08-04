@@ -250,3 +250,69 @@ test('Lookup view clears querying status and permits retry when the action fails
   retry_deferred.resolve([]);
   await flush_async();
 });
+
+test('Lookup view submits an initial query supplied by an opening action', async (t) => {
+  const post_process = load_post_process();
+  const elements = create_lookup_view_elements();
+  const results_deferred = create_deferred();
+  const rendered_list = create_element();
+  const action_calls = [];
+  const new_item_calls = [];
+  const lookup_list = {
+    actions: {
+      lookup_list_get_results(params) {
+        action_calls.push(params);
+        return results_deferred.promise;
+      },
+    },
+  };
+  const view = {
+    env: {
+      lookup_lists: {
+        new_item(params) {
+          new_item_calls.push(params);
+          return lookup_list;
+        },
+      },
+      smart_components: {
+        async render_component() {
+          return rendered_list;
+        },
+      },
+      smart_sources: {
+        embed_model: {
+          is_loaded: true,
+        },
+      },
+    },
+  };
+
+  await post_process.call(
+    create_component(),
+    view,
+    elements.container,
+    {
+      event_source: 'command:smart-lookup:smart-lookup-selection',
+      query: '  highlighted text  ',
+    },
+  );
+
+  t.is(elements.query_input.value, 'highlighted text');
+  t.is(elements.query_input.validation_message, '');
+  t.false(elements.submit_btn.disabled);
+  t.is(new_item_calls.length, 1);
+  t.is(new_item_calls[0].query, 'highlighted text');
+  t.is(action_calls.length, 1);
+  t.is(action_calls[0].query, 'highlighted text');
+  t.is(
+    action_calls[0].event_source,
+    'command:smart-lookup:smart-lookup-selection',
+  );
+  t.true(elements.list_container.inner_html.includes('Querying...'));
+
+  results_deferred.resolve([]);
+  await flush_async();
+
+  t.deepEqual(elements.list_container.children, [rendered_list]);
+  t.is(elements.list_container.attributes['aria-busy'], 'false');
+});
