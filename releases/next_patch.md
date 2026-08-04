@@ -1,3 +1,5 @@
+
+
 Added: menus to Lookup interface for integration with Context, Graph, and other plugins
 
 
@@ -8,3 +10,5 @@ Refactor: Update lookup result retrieval to use actions for configurable behavio
 
 
 Add lookup_list_query tool action for semantic lookup
+
+Added: editor command and selection context-menu action to search selected text with Smart Lookup
