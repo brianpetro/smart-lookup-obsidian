@@ -15,6 +15,11 @@ const MODEL_LOADING_MESSAGE = 'Loading the embedding model. This lookup will run
 const QUERYING_MESSAGE = 'Querying...';
 const LOOKUP_ERROR_MESSAGE = 'Lookup failed. Submit the lookup again to retry.';
 
+/**
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupView} view
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ */
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
   const menu_icon = typeof this.get_icon_html === 'function'
@@ -63,29 +68,48 @@ export async function build_html(view, params = {}) {
   </div></div>`;
 }
 
+/**
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupView} view
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ */
 export async function render(view, params = {}) {
   this.apply_style_sheet(styles_css);
   const html = await build_html.call(this, view, params);
   const frag = this.create_doc_fragment(html);
-  const container = frag.querySelector('.lookup-item-view');
+  const container = /** @type {HTMLElement} */ (frag.querySelector('.lookup-item-view'));
   post_process.call(this, view, container, params);
   return container;
 }
 
+/**
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupView} view
+ * @param {HTMLElement} container
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ */
 export async function post_process(view, container, params = {}) {
-  const query_input = container.querySelector('.lookup-query-input');
-  const query_form = container.querySelector('.lookup-query-form');
-  const auto_submit_input = container.querySelector('.lookup-query-auto-submit');
-  const submit_btn = container.querySelector('.lookup-query-submit');
-  const menu_button = container.querySelector('[data-action="open-menu"]');
-  const list_container = container.querySelector('.smart-lookup-list-container');
-  const app = view?.plugin?.app
+  const query_input = /** @type {HTMLTextAreaElement} */ (container.querySelector('.lookup-query-input'));
+  const query_form = /** @type {HTMLFormElement} */ (container.querySelector('.lookup-query-form'));
+  const auto_submit_input = /** @type {HTMLInputElement} */ (container.querySelector('.lookup-query-auto-submit'));
+  const submit_btn = /** @type {HTMLButtonElement} */ (container.querySelector('.lookup-query-submit'));
+  const menu_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="open-menu"]'));
+  const list_container = /** @type {HTMLElement} */ (container.querySelector('.smart-lookup-list-container'));
+  const app = /** @type {import('smart-types').LookupApp|null} */ (
+    view?.plugin?.app
     || view?.app
     || view?.env?.plugin?.app
     || view?.env?.obsidian_app
-    || globalThis.app
+    || /** @type {Window & {app?: import('smart-types').LookupApp}} */ (activeWindow).app
     || null
-  ;
+  );
+  /** @type {{
+   *   last_query: string|null,
+   *   active_request_id: number,
+   *   lookup_list: import('smart-types').LookupList|null,
+   *   menu_params: import('smart-types').LookupComponentParams|null
+   * }}
+   */
   const state = {
     last_query: null,
     active_request_id: 0,
@@ -98,6 +122,7 @@ export async function post_process(view, container, params = {}) {
     menu_button.disabled = !state.lookup_list;
   };
 
+  /** @param {Event} event */
   const open_lookup_menu = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -155,6 +180,7 @@ export async function post_process(view, container, params = {}) {
     return query;
   };
 
+  /** @param {unknown} raw_query */
   const submit_query = async (raw_query) => {
     const query = sanitize_query(raw_query);
     update_query_validity({ input_el: query_input, query });
@@ -170,6 +196,7 @@ export async function post_process(view, container, params = {}) {
     }
     if (query === state.last_query) return;
     const request_id = ++state.active_request_id;
+    /** @type {import('smart-types').LookupComponentParams} */
     const next_params = {
       ...params,
       query,
@@ -205,6 +232,7 @@ export async function post_process(view, container, params = {}) {
     const lookup_list = view.env.lookup_lists.new_item(next_params);
     render_querying_state();
 
+    /** @type {import('smart-types').LookupResult[]} */
     let results;
     try {
       results = await lookup_list.actions.lookup_list_get_results(next_params);
@@ -286,12 +314,14 @@ export async function post_process(view, container, params = {}) {
   return container;
 }
 
+/** @param {{input_el: HTMLTextAreaElement, query: string}} state */
 export function update_query_validity({ input_el, query }) {
   if (!input_el?.setCustomValidity) return;
   if (!query) input_el.setCustomValidity(REQUIRED_MESSAGE);
   else input_el.setCustomValidity('');
 }
 
+/** @param {{submit_btn: HTMLButtonElement, query: string}} state */
 export function update_submit_state({ submit_btn, query }) {
   if (!submit_btn) return;
   submit_btn.disabled = !query;

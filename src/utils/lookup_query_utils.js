@@ -1,9 +1,9 @@
 const DEFAULT_DEBOUNCE_MS = 300;
 
 /**
- * @param {Function} handler
+ * @param {(value: unknown) => unknown} handler
  * @param {number} delay
- * @returns {Function & {cancel?: Function}}
+ * @returns {((value: unknown) => void) & {cancel?: () => void}}
  */
 export function create_debounced_submit(handler, delay = DEFAULT_DEBOUNCE_MS) {
   let timeout_id;

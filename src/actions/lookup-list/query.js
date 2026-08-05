@@ -1,3 +1,7 @@
+/**
+ * @this {import('smart-types').LookupLists}
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ */
 export async function lookup_list_query(params = {}) {
   const query = to_trimmed_string(params.query);
   if (!query) throw new Error('Missing required argument: query');
@@ -69,6 +73,7 @@ export const action_scope = {
 };
 export const tool = {
   name: 'smart_lookup_query',
+  /** @param {import('smart-types').LookupActionContext} context */
   when({ env }) {
     return Boolean(env.lookup_lists);
   },
@@ -79,6 +84,7 @@ export const tool = {
   },
 };
 
+/** @param {import('smart-types').LookupResult} result */
 function to_result(result) {
   const item = result?.item;
   const key = to_trimmed_string(item?.key)
@@ -94,6 +100,7 @@ function to_result(result) {
   };
 }
 
+/** @param {unknown} value */
 function to_trimmed_string(value) {
   return typeof value === 'string' ? value.trim() : '';
 }

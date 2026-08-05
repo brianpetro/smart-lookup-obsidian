@@ -6,9 +6,7 @@ export const LOOKUP_SELECTION_COMMAND_ID = 'smart-lookup-selection';
  * Open the Smart Lookup view.
  *
  * @this {object}
- * @param {object} [params={}]
- * @param {object} [params.plugin]
- * @param {string} [params.query]
+ * @param {import('smart-types').LookupComponentParams} [params={}]
  * @returns {boolean}
  */
 export function lookup_open_view(params = {}) {
@@ -36,14 +34,17 @@ export const commands = {
   'smart-lookup-view': {
     name: 'Open: Lookup view',
 
+    /** @param {import('smart-types').LookupActionContext} context */
     register_when({ plugin }) {
       return plugin.manifest.id === 'smart-lookup';
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     params({ plugin }) {
       return { plugin };
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     get_scope({ env }) {
       return env.lookup_lists;
     },
@@ -53,10 +54,12 @@ export const commands = {
     name: 'Search selection with Smart Lookup',
     context: 'editor',
 
+    /** @param {import('smart-types').LookupActionContext} context */
     register_when({ plugin }) {
       return plugin.manifest.id === 'smart-lookup';
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     params({ plugin, editor }) {
       return {
         plugin,
@@ -64,10 +67,12 @@ export const commands = {
       };
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     get_scope({ env }) {
       return env.lookup_lists;
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     when({ params }) {
       return Boolean(params.query);
     },
@@ -79,6 +84,7 @@ export const menus = {
     title: 'Search selection with Smart Lookup',
     icon: 'smart-lookup',
 
+    /** @param {import('smart-types').LookupActionContext} context */
     when({ params }) {
       return Boolean(params.query);
     },
@@ -90,14 +96,17 @@ export const ribbon_icons = {
     icon_name: 'smart-lookup',
     description: 'Smart Lookup: Open lookup view',
 
+    /** @param {import('smart-types').LookupActionContext} context */
     register_when({ plugin }) {
       return plugin.manifest.id === 'smart-lookup';
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     params({ plugin }) {
       return { plugin };
     },
 
+    /** @param {import('smart-types').LookupActionContext} context */
     get_scope({ env }) {
       return env.lookup_lists;
     },

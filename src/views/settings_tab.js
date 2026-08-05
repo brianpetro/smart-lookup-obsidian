@@ -1,26 +1,33 @@
 import { SmartPluginSettingsTab } from 'obsidian-smart-env';
 import { render_settings_config } from 'obsidian-smart-env/src/utils/render_settings_config.js';
 
+const render_lookup_settings_config = /** @type {import('smart-types').LookupRenderSettingsConfig} */ (render_settings_config);
+
 export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
 
+  /** @param {HTMLElement} container */
   async render_plugin_settings(container) {
     if (!container) return;
     container.empty?.();
+    const settings_tab = /** @type {{env: import('smart-types').LookupEnvironment}} */ (
+      /** @type {unknown} */ (this)
+    );
+    const env = settings_tab.env;
 
-    const lookup_container = container.createDiv({
+    const lookup_container = /** @type {HTMLElement} */ (container.createDiv({
       cls: 'smart-lookup-settings__section',
       attr: { 'data-section-key': 'lookup_lists' },
-    });
+    }));
 
     const lookup_lists_settings_config = () => {
-      return this.env.lookup_lists?.settings_config
-        || this.env.config.collections.lookup_lists.settings_config
+      return env.lookup_lists?.settings_config
+        || env.config.collections.lookup_lists.settings_config
       ;
     };
 
-    render_settings_config(
+    render_lookup_settings_config(
       lookup_lists_settings_config,
-      this.env.lookup_lists,
+      env.lookup_lists,
       lookup_container,
       {
         default_group_name: 'Lookup lists',

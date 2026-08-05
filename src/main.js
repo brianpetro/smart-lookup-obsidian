@@ -1,4 +1,4 @@
-import { SmartEnv, SmartPlugin } from 'obsidian-smart-env';
+import { SmartPlugin } from 'obsidian-smart-env';
 import { smart_env_config } from '../smart_env.config.js';
 import { SmartLookupSettingsTab } from './views/settings_tab.js';
 import { LookupItemView } from './views/lookup_item_view.js';
@@ -6,7 +6,6 @@ import { ReleaseNotesView } from './views/release_notes_view.js';
 import { sanitize_query } from './utils/lookup_query_utils.js';
 
 export default class SmartLookupPlugin extends SmartPlugin {
-  SmartEnv = SmartEnv;
   ReleaseNotesView = ReleaseNotesView;
 
   get smart_env_config() {
@@ -33,7 +32,7 @@ export default class SmartLookupPlugin extends SmartPlugin {
   }
 
   onunload() {
-    console.log('Unloading Smart Lookup plugin');
+    // console.log('Unloading Smart Lookup plugin');
     this.notices?.unload();
     this.env?.unload_main?.(this);
   }
@@ -43,7 +42,7 @@ export default class SmartLookupPlugin extends SmartPlugin {
       this.env.build_menu(
         'lookup:editor_menu',
         menu,
-        this.env.lookup_lists,
+        /** @type {import('obsidian-smart-env').SmartEnv & import('smart-types').LookupEnvironment} */ (this.env).lookup_lists,
         {
           plugin: this,
           query: sanitize_query(editor.getSelection()),

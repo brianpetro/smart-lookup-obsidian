@@ -1,18 +1,26 @@
-import { DISPLAY_SEPARATOR, get_item_display_name } from 'obsidian-smart-env/src/utils/get_item_display_name.js';
-import { register_item_hover_popover } from 'obsidian-smart-env/src/utils/register_item_hover_popover.js';
-import { register_item_drag } from 'obsidian-smart-env/src/utils/register_item_drag.js';
-import { open_source } from "obsidian-smart-env/src/utils/open_source.js";
+import { DISPLAY_SEPARATOR, get_item_display_name as base_get_item_display_name } from 'obsidian-smart-env/src/utils/get_item_display_name.js';
+import { register_item_hover_popover as base_register_item_hover_popover } from 'obsidian-smart-env/src/utils/register_item_hover_popover.js';
+import { register_item_drag as base_register_item_drag } from 'obsidian-smart-env/src/utils/register_item_drag.js';
+import { open_source as base_open_source } from "obsidian-smart-env/src/utils/open_source.js";
 import {
   build_lookup_list_menu,
   show_menu,
 } from './list.js';
 
+const get_item_display_name = /** @type {import('smart-types').LookupGetItemDisplayName} */ (
+  /** @type {unknown} */ (base_get_item_display_name)
+);
+const register_item_hover_popover = /** @type {import('smart-types').LookupRegisterItemHoverPopover} */ (base_register_item_hover_popover);
+const register_item_drag = /** @type {import('smart-types').LookupRegisterItemDrag} */ (base_register_item_drag);
+const open_source = /** @type {import('smart-types').LookupOpenSource} */ (base_open_source);
+
 
 /**
  * Builds the HTML string for the result component.
  * .temp-container is used so listeners can be added to .lookup-result (otherwise does not persist) 
- * @param {Object} result - The results a <Result> object 
- * @param {Object} [params={}] - Optional parameters.
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupResult} result - The results a <Result> object 
+ * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
  * @returns {Promise<string>} A promise that resolves to the HTML string.
  */
 export async function build_html(result, params = {}) {
@@ -51,25 +59,26 @@ export async function build_html(result, params = {}) {
 
 /**
  * Renders the result component by building the HTML and post-processing it.
- * @param {Object} result_scope - The result object containing component data.
- * @param {Object} [params={}] - Optional parameters.
- * @returns {Promise<DocumentFragment>} A promise that resolves to the processed document fragment.
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupResult} result_scope - The result object containing component data.
+ * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
+ * @returns {Promise<HTMLElement>} A promise that resolves to the processed result element.
  */
 export async function render(result_scope, params = {}) {
   let html = await build_html.call(this, result_scope, params);
   const frag = this.create_doc_fragment(html);
-  const container = frag.querySelector('.lookup-result');
+  const container = /** @type {HTMLElement} */ (frag.querySelector('.lookup-result'));
   post_process.call(this, result_scope, container, params);
   return container;
 }
 
 /**
  * Post-processes the rendered document fragment by adding event listeners and rendering entity details.
- * @param {Object} result_scope - The result object containing component data.
- * @param {Source|Block} result_scope.item - The item data within the result object.
- * @param {DocumentFragment} container - The document fragment to be post-processed.
- * @param {Object} [params={}] - Optional parameters.
- * @returns {Promise<DocumentFragment>} A promise that resolves to the post-processed document fragment.
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupResult} result_scope - The result object containing component data.
+ * @param {HTMLElement} container - The result element to be post-processed.
+ * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
+ * @returns {Promise<HTMLElement>} A promise that resolves to the post-processed result element.
  */
 export async function post_process(result_scope, container, params = {}) {
   const { item } = result_scope;
@@ -81,13 +90,19 @@ export async function post_process(result_scope, container, params = {}) {
   const should_render_markdown = component_settings?.render_markdown ?? true;
   if (!should_render_markdown) container.classList.add('lookup-result-plaintext');
 
+  /** @param {HTMLElement} _result_elm */
   const render_result = async (_result_elm) => {
     if (!_result_elm.querySelector('li').innerHTML) {
       const collection_key = _result_elm.dataset.collection;
-      const entity = env[collection_key].get(_result_elm.dataset.path);
+      const collection = /** @type {import('smart-types').LookupItemCollection} */ (
+        env[collection_key]
+      );
+      const entity = collection.get(_result_elm.dataset.path);
+      /** @type {string} */
       let markdown;
       if (should_render_embed(entity)) markdown = `${entity.embed_link}\n\n${await entity.read()}`;
       else markdown = process_for_rendering(await entity.read());
+      /** @type {DocumentFragment} */
       let entity_frag;
       if (should_render_markdown) entity_frag = await this.render_markdown(markdown, entity);
       else entity_frag = this.create_doc_fragment(markdown);
@@ -125,13 +140,14 @@ export async function post_process(result_scope, container, params = {}) {
 
   const observer = new MutationObserver((mutations) => {
     const has_expansion_change = mutations.some((mutation) => {
-      const target = mutation.target;
+      const target = /** @type {HTMLElement} */ (mutation.target);
       return mutation.attributeName === 'class' &&
         mutation.oldValue?.includes('sc-collapsed') !== target.classList.contains('sc-collapsed');
     });
 
-    if (has_expansion_change && !mutations[0].target.classList.contains('sc-collapsed')) {
-      render_result(mutations[0].target);
+    const target = /** @type {HTMLElement} */ (mutations[0].target);
+    if (has_expansion_change && !target.classList.contains('sc-collapsed')) {
+      render_result(target);
     }
   });
   observer.observe(container, {
@@ -147,8 +163,15 @@ export async function post_process(result_scope, container, params = {}) {
   return container;
 }
 
+/**
+ * @param {number} score
+ * @param {import('smart-types').LookupItem} item
+ * @param {import('smart-types').LookupListItemComponentSettings} [component_settings={}]
+ */
 function get_result_header_html(score, item, component_settings = {}) {
-  const raw_parts = get_item_display_name(item, component_settings).split(DISPLAY_SEPARATOR).filter(Boolean);
+  const raw_parts = /** @type {string} */ (
+    get_item_display_name(item, component_settings)
+  ).split(DISPLAY_SEPARATOR).filter(Boolean);
   const parts = format_item_parts(raw_parts, item?.lines);
   const name = parts.pop();
   const formatted_score = typeof score === 'number' ? score.toFixed(2) : score;
@@ -164,6 +187,10 @@ function get_result_header_html(score, item, component_settings = {}) {
   ].join('');
 }
 
+/**
+ * @param {string[]} parts
+ * @param {number[]} [lines=[]]
+ */
 function format_item_parts(parts, lines = []) {
   if (!Array.isArray(parts) || !parts.length) return [];
   const has_line_marker = Array.isArray(lines) && lines.length;
@@ -175,12 +202,14 @@ function format_item_parts(parts, lines = []) {
   });
 }
 
+/** @param {import('smart-types').LookupItem|null|undefined} entity */
 export function should_render_embed(entity) {
   if (!entity) return false;
   if (entity.is_media) return true;
   return false;
 }
 
+/** @param {string} content */
 export function process_for_rendering(content) {
   // prevent dataview rendering
   if (content.includes('```dataview')) content = content.replace(/```dataview/g, '```\\dataview');
@@ -191,10 +220,12 @@ export function process_for_rendering(content) {
   return content;
 }
 
+/** @param {MouseEvent} event */
 function toggle_result(event) {
   event.preventDefault();
   event.stopPropagation();
-  const _result_elm = event.target.closest('.lookup-result');
+  const target = /** @type {HTMLElement} */ (event.target);
+  const _result_elm = /** @type {HTMLElement} */ (target.closest('.lookup-result'));
   _result_elm.classList.toggle('sc-collapsed');
 };
 

@@ -6,7 +6,7 @@ export const SMART_CONTEXT_URL = 'https://smartconnections.app/smart-context/';
  * Smart Context Pro replaces this placeholder with an actual context action via
  * its own `lookup:list_menu` menu action.
  *
- * @this {object}
+ * @this {import('smart-types').LookupList}
  */
 export function lookup_list_send_to_smart_context() {
   if (this?.env?.event_logs?.settings?.native_notice_attention) {
@@ -20,13 +20,7 @@ export function lookup_list_send_to_smart_context() {
     return true;
   }
 
-  const open_url = globalThis.activeWindow?.open
-    || globalThis.window?.open
-    || globalThis.open
-  ;
-  if (typeof open_url !== 'function') return false;
-
-  open_url(SMART_CONTEXT_URL, '_external');
+  activeWindow.open(SMART_CONTEXT_URL, '_external');
   return true;
 }
 

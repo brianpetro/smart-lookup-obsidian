@@ -1,20 +1,37 @@
 import { Menu } from 'obsidian';
 import styles_css from './styles.css';
 
+/** @typedef {HTMLElement & {_lookup_list_menu_registered?: boolean}} LookupListElement */
+
+/**
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {import('smart-types').LookupComponentParams} [opts={}]
+ */
 export async function build_html(lookup_list, opts = {}) {
   const lookup_key = lookup_list?.key || lookup_list?.item?.key || '';
   return `<div class="smart-lookup-list" data-key="${lookup_key}"></div>`;
 }
 
+/**
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {import('smart-types').LookupComponentParams} [opts={}]
+ */
 export async function render(lookup_list, opts = {}) {
   this.apply_style_sheet(styles_css);
   const html = await build_html.call(this, lookup_list, opts);
   const frag = this.create_doc_fragment(html);
-  const container = frag.firstElementChild;
+  const container = /** @type {LookupListElement} */ (frag.firstElementChild);
   post_process.call(this, lookup_list, container, opts);
   return container;
 }
 
+/**
+ * @this {import('smart-types').LookupComponentRenderer}
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {LookupListElement} container
+ * @param {import('smart-types').LookupComponentParams} [opts={}]
+ */
 export async function post_process(lookup_list, container, opts = {}) {
   container.dataset.key = lookup_list.key;
   const results = Array.isArray(opts.results)
@@ -43,6 +60,11 @@ export async function post_process(lookup_list, container, opts = {}) {
   return container;
 }
 
+/**
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {LookupListElement} container
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ */
 function register_lookup_list_menu(lookup_list, container, params = {}) {
   if (container._lookup_list_menu_registered) return;
   container._lookup_list_menu_registered = true;
@@ -61,6 +83,11 @@ function register_lookup_list_menu(lookup_list, container, params = {}) {
   });
 }
 
+/**
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @returns {Menu|null}
+ */
 export function build_lookup_list_menu(lookup_list, params = {}) {
   const app = get_lookup_app(lookup_list, params);
   if (!app) return null;
@@ -70,20 +97,31 @@ export function build_lookup_list_menu(lookup_list, params = {}) {
   return menu;
 }
 
+/**
+ * @param {import('smart-types').LookupList} lookup_list
+ * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @returns {import('obsidian').App|null}
+ */
 function get_lookup_app(lookup_list, params = {}) {
   const env = lookup_list?.env;
-  return params.app
+  return /** @type {import('obsidian').App|null} */ (
+    params.app
     || params.view?.plugin?.app
     || params.view?.app
     || env?.smart_lookup_plugin?.app
     || env?.plugin?.app
     || env?.main?.app
     || env?.obsidian_app
-    || globalThis.app
+    || /** @type {Window & {app?: import('obsidian').App}} */ (activeWindow).app
     || null
-  ;
+  );
 }
 
+/**
+ * @param {Menu} menu
+ * @param {Event} event
+ * @param {HTMLElement} anchor_el
+ */
 export function show_menu(menu, event, anchor_el) {
   if (
     event?.type === 'contextmenu'

@@ -4,5 +4,5 @@ import release_notes_md from '../../releases/latest_release.md' with { type: 'ma
 export class ReleaseNotesView extends BaseReleaseNotesView {
   static view_type = 'smart-lookup-release-notes-view';
   static plugin_id = 'smart-lookup';
-  static release_notes_md = release_notes_md;
+  static release_notes_md = /** @type {string} */ (release_notes_md);
 }
