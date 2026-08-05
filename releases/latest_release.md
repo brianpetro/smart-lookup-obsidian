@@ -1,5 +1,8 @@
 # Smart Lookup Core v0.3
 
+> [!NOTE] What's new in `v0.3.1`
+> Updated: Smart Environment
+
 ## Turn the sentence under your cursor into a vault-wide search
 
 Select a phrase in the note you are reading or writing, run Smart Lookup, and search the vault by meaning without retyping the thought in another pane.
@@ -60,24 +63,6 @@ Open one consistent result-list menu and continue with the current set:
 - [Smart Lookup getting started](https://smartconnections.app/smart-lookup/getting-started/?utm_source=smart-lookup-release)
 - [Smart Lookup FAQ](https://smartconnections.app/smart-lookup/faq/?utm_source=smart-lookup-release)
 
-## Additional notes
-
-Added: menus to Lookup interface for integration with Context, Graph, and other plugins
-
-
-Add loading state for embedding model in lookup process
-
-
-Refactor: Update lookup result retrieval to use actions for configurable behavior and improved flexibility
-
-
-Add lookup_list_query tool action for semantic lookup
-
-Added: editor command and selection context-menu action to search selected text with Smart Lookup
-
-
-Updated: Smart Environment v3
-
-Updated: 2026-08-04
+Updated: 2026-08-05
 
 [More details about the latest releases](https://smartconnections.app/smart-lookup/releases/0-3/?utm_source=smart-lookup-release)
