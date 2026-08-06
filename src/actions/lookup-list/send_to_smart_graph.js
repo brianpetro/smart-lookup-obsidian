@@ -6,7 +6,7 @@ export const SMART_GRAPH_URL = 'https://smartconnections.app/smart-graph/';
  * Smart Graph Pro replaces this placeholder with an actual graph action via
  * its own `lookup:list_menu` menu action.
  *
- * @this {import('smart-types').LookupList}
+ * @this {import('jsbrains/smart-types').LookupList}
  */
 export function lookup_list_send_to_smart_graph() {
   if (this?.env?.event_logs?.settings?.native_notice_attention) {

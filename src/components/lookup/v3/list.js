@@ -4,8 +4,8 @@ import styles_css from './styles.css';
 /** @typedef {HTMLElement & {_lookup_list_menu_registered?: boolean}} LookupListElement */
 
 /**
- * @param {import('smart-types').LookupList} lookup_list
- * @param {import('smart-types').LookupComponentParams} [opts={}]
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [opts={}]
  */
 export async function build_html(lookup_list, opts = {}) {
   const lookup_key = lookup_list?.key || lookup_list?.item?.key || '';
@@ -13,9 +13,9 @@ export async function build_html(lookup_list, opts = {}) {
 }
 
 /**
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupList} lookup_list
- * @param {import('smart-types').LookupComponentParams} [opts={}]
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [opts={}]
  */
 export async function render(lookup_list, opts = {}) {
   this.apply_style_sheet(styles_css);
@@ -27,10 +27,10 @@ export async function render(lookup_list, opts = {}) {
 }
 
 /**
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupList} lookup_list
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
  * @param {LookupListElement} container
- * @param {import('smart-types').LookupComponentParams} [opts={}]
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [opts={}]
  */
 export async function post_process(lookup_list, container, opts = {}) {
   container.dataset.key = lookup_list.key;
@@ -61,9 +61,9 @@ export async function post_process(lookup_list, container, opts = {}) {
 }
 
 /**
- * @param {import('smart-types').LookupList} lookup_list
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
  * @param {LookupListElement} container
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  */
 function register_lookup_list_menu(lookup_list, container, params = {}) {
   if (container._lookup_list_menu_registered) return;
@@ -84,8 +84,8 @@ function register_lookup_list_menu(lookup_list, container, params = {}) {
 }
 
 /**
- * @param {import('smart-types').LookupList} lookup_list
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  * @returns {Menu|null}
  */
 export function build_lookup_list_menu(lookup_list, params = {}) {
@@ -98,8 +98,8 @@ export function build_lookup_list_menu(lookup_list, params = {}) {
 }
 
 /**
- * @param {import('smart-types').LookupList} lookup_list
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @param {import('jsbrains/smart-types').LookupList} lookup_list
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  * @returns {import('obsidian').App|null}
  */
 function get_lookup_app(lookup_list, params = {}) {

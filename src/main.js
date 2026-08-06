@@ -42,7 +42,7 @@ export default class SmartLookupPlugin extends SmartPlugin {
       this.env.build_menu(
         'lookup:editor_menu',
         menu,
-        /** @type {import('obsidian-smart-env').SmartEnv & import('smart-types').LookupEnvironment} */ (this.env).lookup_lists,
+        /** @type {import('obsidian-smart-env').SmartEnv & import('jsbrains/smart-types').LookupEnvironment} */ (this.env).lookup_lists,
         {
           plugin: this,
           query: sanitize_query(editor.getSelection()),

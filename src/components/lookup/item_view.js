@@ -16,9 +16,9 @@ const QUERYING_MESSAGE = 'Querying...';
 const LOOKUP_ERROR_MESSAGE = 'Lookup failed. Submit the lookup again to retry.';
 
 /**
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupView} view
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupView} view
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  */
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
@@ -69,9 +69,9 @@ export async function build_html(view, params = {}) {
 }
 
 /**
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupView} view
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupView} view
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  */
 export async function render(view, params = {}) {
   this.apply_style_sheet(styles_css);
@@ -83,10 +83,10 @@ export async function render(view, params = {}) {
 }
 
 /**
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupView} view
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupView} view
  * @param {HTMLElement} container
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  */
 export async function post_process(view, container, params = {}) {
   const query_input = /** @type {HTMLTextAreaElement} */ (container.querySelector('.lookup-query-input'));
@@ -95,19 +95,19 @@ export async function post_process(view, container, params = {}) {
   const submit_btn = /** @type {HTMLButtonElement} */ (container.querySelector('.lookup-query-submit'));
   const menu_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="open-menu"]'));
   const list_container = /** @type {HTMLElement} */ (container.querySelector('.smart-lookup-list-container'));
-  const app = /** @type {import('smart-types').LookupApp|null} */ (
+  const app = /** @type {import('jsbrains/smart-types').LookupApp|null} */ (
     view?.plugin?.app
     || view?.app
     || view?.env?.plugin?.app
     || view?.env?.obsidian_app
-    || /** @type {Window & {app?: import('smart-types').LookupApp}} */ (activeWindow).app
+    || /** @type {Window & {app?: import('jsbrains/smart-types').LookupApp}} */ (activeWindow).app
     || null
   );
   /** @type {{
    *   last_query: string|null,
    *   active_request_id: number,
-   *   lookup_list: import('smart-types').LookupList|null,
-   *   menu_params: import('smart-types').LookupComponentParams|null
+   *   lookup_list: import('jsbrains/smart-types').LookupList|null,
+   *   menu_params: import('jsbrains/smart-types').LookupComponentParams|null
    * }}
    */
   const state = {
@@ -196,7 +196,7 @@ export async function post_process(view, container, params = {}) {
     }
     if (query === state.last_query) return;
     const request_id = ++state.active_request_id;
-    /** @type {import('smart-types').LookupComponentParams} */
+    /** @type {import('jsbrains/smart-types').LookupComponentParams} */
     const next_params = {
       ...params,
       query,
@@ -232,7 +232,7 @@ export async function post_process(view, container, params = {}) {
     const lookup_list = view.env.lookup_lists.new_item(next_params);
     render_querying_state();
 
-    /** @type {import('smart-types').LookupResult[]} */
+    /** @type {import('jsbrains/smart-types').LookupResult[]} */
     let results;
     try {
       results = await lookup_list.actions.lookup_list_get_results(next_params);

@@ -1,7 +1,7 @@
 import { SmartPluginSettingsTab } from 'obsidian-smart-env';
 import { render_settings_config } from 'obsidian-smart-env/src/utils/render_settings_config.js';
 
-const render_lookup_settings_config = /** @type {import('smart-types').LookupRenderSettingsConfig} */ (render_settings_config);
+const render_lookup_settings_config = /** @type {import('jsbrains/smart-types').LookupRenderSettingsConfig} */ (render_settings_config);
 
 export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
 
@@ -9,7 +9,7 @@ export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
   async render_plugin_settings(container) {
     if (!container) return;
     container.empty?.();
-    const settings_tab = /** @type {{env: import('smart-types').LookupEnvironment}} */ (
+    const settings_tab = /** @type {{env: import('jsbrains/smart-types').LookupEnvironment}} */ (
       /** @type {unknown} */ (this)
     );
     const env = settings_tab.env;

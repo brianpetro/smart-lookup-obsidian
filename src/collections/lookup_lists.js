@@ -1,10 +1,10 @@
 import base_config from 'obsidian-smart-env/src/collections/lookup_lists.js';
 import { settings_config as base_settings_config } from 'obsidian-smart-env/src/collections/lookup_lists.js';
 
-const base = /** @type {import('smart-types').SmartEnvCollectionConfig} */ (base_config);
-const inherited_settings_config = /** @type {import('smart-types').SettingsConfig} */ (base_settings_config);
+const base = /** @type {import('jsbrains/smart-types').SmartEnvCollectionConfig} */ (base_config);
+const inherited_settings_config = /** @type {import('jsbrains/smart-types').SettingsConfig} */ (base_settings_config);
 
-/** @type {import('smart-types').SettingsConfig} */
+/** @type {import('jsbrains/smart-types').SettingsConfig} */
 export const settings_config = {
   ...inherited_settings_config,
   results_limit: {

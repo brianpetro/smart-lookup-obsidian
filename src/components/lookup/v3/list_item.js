@@ -7,20 +7,20 @@ import {
   show_menu,
 } from './list.js';
 
-const get_item_display_name = /** @type {import('smart-types').LookupGetItemDisplayName} */ (
+const get_item_display_name = /** @type {import('jsbrains/smart-types').LookupGetItemDisplayName} */ (
   /** @type {unknown} */ (base_get_item_display_name)
 );
-const register_item_hover_popover = /** @type {import('smart-types').LookupRegisterItemHoverPopover} */ (base_register_item_hover_popover);
-const register_item_drag = /** @type {import('smart-types').LookupRegisterItemDrag} */ (base_register_item_drag);
-const open_source = /** @type {import('smart-types').LookupOpenSource} */ (base_open_source);
+const register_item_hover_popover = /** @type {import('jsbrains/smart-types').LookupRegisterItemHoverPopover} */ (base_register_item_hover_popover);
+const register_item_drag = /** @type {import('jsbrains/smart-types').LookupRegisterItemDrag} */ (base_register_item_drag);
+const open_source = /** @type {import('jsbrains/smart-types').LookupOpenSource} */ (base_open_source);
 
 
 /**
  * Builds the HTML string for the result component.
  * .temp-container is used so listeners can be added to .lookup-result (otherwise does not persist) 
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupResult} result - The results a <Result> object 
- * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupResult} result - The results a <Result> object 
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}] - Optional parameters.
  * @returns {Promise<string>} A promise that resolves to the HTML string.
  */
 export async function build_html(result, params = {}) {
@@ -59,9 +59,9 @@ export async function build_html(result, params = {}) {
 
 /**
  * Renders the result component by building the HTML and post-processing it.
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupResult} result_scope - The result object containing component data.
- * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupResult} result_scope - The result object containing component data.
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}] - Optional parameters.
  * @returns {Promise<HTMLElement>} A promise that resolves to the processed result element.
  */
 export async function render(result_scope, params = {}) {
@@ -74,10 +74,10 @@ export async function render(result_scope, params = {}) {
 
 /**
  * Post-processes the rendered document fragment by adding event listeners and rendering entity details.
- * @this {import('smart-types').LookupComponentRenderer}
- * @param {import('smart-types').LookupResult} result_scope - The result object containing component data.
+ * @this {import('jsbrains/smart-types').LookupComponentRenderer}
+ * @param {import('jsbrains/smart-types').LookupResult} result_scope - The result object containing component data.
  * @param {HTMLElement} container - The result element to be post-processed.
- * @param {import('smart-types').LookupComponentParams} [params={}] - Optional parameters.
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}] - Optional parameters.
  * @returns {Promise<HTMLElement>} A promise that resolves to the post-processed result element.
  */
 export async function post_process(result_scope, container, params = {}) {
@@ -94,7 +94,7 @@ export async function post_process(result_scope, container, params = {}) {
   const render_result = async (_result_elm) => {
     if (!_result_elm.querySelector('li').innerHTML) {
       const collection_key = _result_elm.dataset.collection;
-      const collection = /** @type {import('smart-types').LookupItemCollection} */ (
+      const collection = /** @type {import('jsbrains/smart-types').LookupItemCollection} */ (
         env[collection_key]
       );
       const entity = collection.get(_result_elm.dataset.path);
@@ -165,8 +165,8 @@ export async function post_process(result_scope, container, params = {}) {
 
 /**
  * @param {number} score
- * @param {import('smart-types').LookupItem} item
- * @param {import('smart-types').LookupListItemComponentSettings} [component_settings={}]
+ * @param {import('jsbrains/smart-types').LookupItem} item
+ * @param {import('jsbrains/smart-types').LookupListItemComponentSettings} [component_settings={}]
  */
 function get_result_header_html(score, item, component_settings = {}) {
   const raw_parts = /** @type {string} */ (
@@ -202,7 +202,7 @@ function format_item_parts(parts, lines = []) {
   });
 }
 
-/** @param {import('smart-types').LookupItem|null|undefined} entity */
+/** @param {import('jsbrains/smart-types').LookupItem|null|undefined} entity */
 export function should_render_embed(entity) {
   if (!entity) return false;
   if (entity.is_media) return true;

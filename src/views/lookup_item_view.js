@@ -6,11 +6,11 @@ export class LookupItemView extends SmartItemView {
   static get icon_name() { return 'smart-lookup'; }
 
   /**
-   * @param {import('smart-types').LookupComponentParams} [lookup_params]
+   * @param {import('jsbrains/smart-types').LookupComponentParams} [lookup_params]
    * @param {HTMLElement} [container]
    */
   async render_view(lookup_params, container = /** @type {HTMLElement} */ (this.container)) {
-    const frag = await (/** @type {import('smart-types').LookupEnvironment} */ (this.env))
+    const frag = await (/** @type {import('jsbrains/smart-types').LookupEnvironment} */ (this.env))
       .smart_components.render_component('lookup_item_view', this, lookup_params);
     container.empty();
     container.appendChild(frag);

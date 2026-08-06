@@ -1,6 +1,6 @@
 /**
- * @this {import('smart-types').LookupLists}
- * @param {import('smart-types').LookupComponentParams} [params={}]
+ * @this {import('jsbrains/smart-types').LookupLists}
+ * @param {import('jsbrains/smart-types').LookupComponentParams} [params={}]
  */
 export async function lookup_list_query(params = {}) {
   const query = to_trimmed_string(params.query);
@@ -73,7 +73,7 @@ export const action_scope = {
 };
 export const tool = {
   name: 'smart_lookup_query',
-  /** @param {import('smart-types').LookupActionContext} context */
+  /** @param {import('jsbrains/smart-types').LookupActionContext} context */
   when({ env }) {
     return Boolean(env.lookup_lists);
   },
@@ -84,7 +84,7 @@ export const tool = {
   },
 };
 
-/** @param {import('smart-types').LookupResult} result */
+/** @param {import('jsbrains/smart-types').LookupResult} result */
 function to_result(result) {
   const item = result?.item;
   const key = to_trimmed_string(item?.key)
