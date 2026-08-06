@@ -94,9 +94,9 @@ export async function post_process(result_scope, container, params = {}) {
   const render_result = async (_result_elm) => {
     if (!_result_elm.querySelector('li').innerHTML) {
       const collection_key = _result_elm.dataset.collection;
-      const collection = /** @type {import('jsbrains/smart-types').LookupItemCollection} */ (
-        env[collection_key]
-      );
+      const collection = (/** @type {Record<string, import('jsbrains/smart-types').LookupItemCollection>} */ (
+        /** @type {unknown} */ (env)
+      ))[collection_key];
       const entity = collection.get(_result_elm.dataset.path);
       /** @type {string} */
       let markdown;

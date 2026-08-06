@@ -9,10 +9,7 @@ export class SmartLookupSettingsTab extends SmartPluginSettingsTab {
   async render_plugin_settings(container) {
     if (!container) return;
     container.empty?.();
-    const settings_tab = /** @type {{env: import('jsbrains/smart-types').LookupEnvironment}} */ (
-      /** @type {unknown} */ (this)
-    );
-    const env = settings_tab.env;
+    const env = this.env;
 
     const lookup_container = /** @type {HTMLElement} */ (container.createDiv({
       cls: 'smart-lookup-settings__section',

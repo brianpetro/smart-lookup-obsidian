@@ -6,6 +6,7 @@ const DEFAULT_DEBOUNCE_MS = 300;
  * @returns {((value: unknown) => void) & {cancel?: () => void}}
  */
 export function create_debounced_submit(handler, delay = DEFAULT_DEBOUNCE_MS) {
+  /** @type {number|undefined} */
   let timeout_id;
   const schedule = (value) => {
     if (timeout_id) window.clearTimeout(timeout_id);
