@@ -93,7 +93,7 @@ export async function post_process(result_scope, container, params = {}) {
   /** @param {HTMLElement} _result_elm */
   const render_result = async (_result_elm) => {
     if (!_result_elm.querySelector('li').innerHTML) {
-      const collection_key = _result_elm.dataset.collection;
+      const collection_key = /** @type {string} */ (_result_elm.dataset.collection);
       const collection = (/** @type {Record<string, import('jsbrains/smart-types').LookupItemCollection>} */ (
         /** @type {unknown} */ (env)
       ))[collection_key];
