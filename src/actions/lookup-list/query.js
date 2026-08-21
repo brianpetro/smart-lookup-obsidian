@@ -71,18 +71,9 @@ export const action_scope = {
   type: 'collection',
   collection_key: 'lookup_lists',
 };
-export const tool = {
-  name: 'smart_lookup_query',
-  /** @param {import('jsbrains/smart-types').LookupActionContext} context */
-  when({ env }) {
-    return Boolean(env.lookup_lists);
-  },
-  effects: {
-    read_only: true,
-    destructive: false,
-    idempotent: true,
-  },
-};
+// Compatibility-only collection wrapper. The canonical public tool is
+// lookup_list_get_results on the exact LookupList scope.
+export const tool = false;
 
 /** @param {import('jsbrains/smart-types').LookupResult} result */
 function to_result(result) {

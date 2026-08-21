@@ -1,5 +1,5 @@
 import test from 'ava';
-import { lookup_list_query } from './query.js';
+import { lookup_list_query, tool } from './query.js';
 
 test('lookup_list_query creates a Lookup List and returns transport-neutral results', async (t) => {
   const lookup_list = {
@@ -51,4 +51,8 @@ test('lookup_list_query creates a Lookup List and returns transport-neutral resu
       ],
     },
   );
+});
+
+test('lookup_list_query is not exposed as a second public tool', (t) => {
+  t.false(tool);
 });
