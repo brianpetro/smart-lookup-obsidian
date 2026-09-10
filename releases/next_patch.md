@@ -6,11 +6,11 @@
 
 Lookup now keeps its ranking settings separate from Connections. If you use the same scoring method in both products, changing one no longer changes how the other ranks results.
 
-Connected tools can also limit results, search Sources or Blocks, and apply filters through the same retrieval settings used by Lookup.
+Choose Sources when you want whole-note results or Blocks when you want smaller passages. Connected tools can use the same result type, limit, and filters.
 
 ![[lookup-settings-results-type-sources-blocks-editorial-16x9-dark-v0.3.4.png]]
 
-*Choose whole-note Sources or individual Blocks in Lookup's semantic-search settings.*
+*Sources return whole notes; Blocks keep each result focused on a smaller passage.*
 
 ### Full release notes
 
