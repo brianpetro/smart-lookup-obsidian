@@ -2,9 +2,15 @@
 
 **HyDE (Pro)** uses your configured chat model to generate sample note passages based on your query, then searches with both those passages and your original words. Duplicate matches are combined into one ranked list of existing sources; the generated passages are search aids, not new notes.
 
+### Control what Lookup returns
+
 Lookup now keeps its ranking settings separate from Connections. If you use the same scoring method in both products, changing one no longer changes how the other ranks results.
 
 Connected tools can also limit results, search Sources or Blocks, and apply filters through the same retrieval settings used by Lookup.
+
+![[lookup-settings-results-type-sources-blocks-editorial-16x9-dark-v0.3.4.png]]
+
+*Choose whole-note Sources or individual Blocks in Lookup's semantic-search settings.*
 
 ### Full release notes
 
