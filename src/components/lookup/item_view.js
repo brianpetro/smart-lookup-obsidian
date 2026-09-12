@@ -27,6 +27,11 @@ export async function build_html(view, params = {}) {
     : ''
   ;
 
+  const hyde_button = view.env.config?.actions?.lookup_list_generate_hyde
+    ? '<button class="lookup-hyde-submit" type="button" title="Send bounded TopK query excerpts to the configured chat model and search with a generated hypothetical document.">HyDE</button>'
+    : ''
+  ;
+
   return `<div><div class="lookup-item-view">
     <div class="lookup-top-bar">
       <div class="lookup-actions">
@@ -60,6 +65,7 @@ export async function build_html(view, params = {}) {
           <span>${AUTO_SUBMIT_LABEL}</span>
         </label>
         <button class="mod-cta lookup-query-submit" type="submit">${SUBMIT_LABEL}</button>
+        ${hyde_button}
       </div>
     </form>
     <div class="smart-lookup-list-container">
@@ -93,6 +99,7 @@ export async function post_process(view, container, params = {}) {
   const query_form = /** @type {HTMLFormElement} */ (container.querySelector('.lookup-query-form'));
   const auto_submit_input = /** @type {HTMLInputElement} */ (container.querySelector('.lookup-query-auto-submit'));
   const submit_btn = /** @type {HTMLButtonElement} */ (container.querySelector('.lookup-query-submit'));
+  const hyde_btn = /** @type {HTMLButtonElement|null} */ (container.querySelector('.lookup-hyde-submit'));
   const menu_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="open-menu"]'));
   const list_container = /** @type {HTMLElement} */ (container.querySelector('.smart-lookup-list-container'));
   const app = /** @type {import('jsbrains/smart-types').LookupApp|null} */ (
@@ -105,6 +112,8 @@ export async function post_process(view, container, params = {}) {
   );
   /** @type {{
    *   last_query: string|null,
+   *   last_action_key: string|null,
+   *   pending_action_key: string|null,
    *   active_request_id: number,
    *   lookup_list: import('jsbrains/smart-types').LookupList|null,
    *   menu_params: import('jsbrains/smart-types').LookupComponentParams|null
@@ -112,6 +121,8 @@ export async function post_process(view, container, params = {}) {
    */
   const state = {
     last_query: null,
+    last_action_key: null,
+    pending_action_key: null,
     active_request_id: 0,
     lookup_list: null,
     menu_params: null,
@@ -177,29 +188,48 @@ export async function post_process(view, container, params = {}) {
     const query = sanitize_query(query_input.value);
     update_query_validity({ input_el: query_input, query });
     update_submit_state({ submit_btn, query });
+    if (hyde_btn) hyde_btn.disabled = !query || state.pending_action_key === 'lookup_list_generate_hyde';
     return query;
   };
 
-  /** @param {unknown} raw_query */
-  const submit_query = async (raw_query) => {
+  /**
+   * @param {unknown} raw_query
+   * @param {string} [action_key] - Normal/automatic submission is always query-only.
+   */
+  const submit_query = async (raw_query, action_key = 'lookup_list_get_results_query') => {
     const query = sanitize_query(raw_query);
     update_query_validity({ input_el: query_input, query });
     update_submit_state({ submit_btn, query });
     if (!query) {
       ++state.active_request_id;
       state.last_query = null;
+      state.pending_action_key = null;
       state.lookup_list = null;
       state.menu_params = null;
+      sync_form_state();
       update_menu_state();
       render_info_state();
       return;
     }
-    if (query === state.last_query) return;
+    // Switching from Lookup to HyDE must run even for the same text. A completed
+    // HyDE can be explicitly regenerated, but repeated clicks while pending do not run.
+    if (query === state.last_query && action_key === state.last_action_key
+      && (state.pending_action_key || action_key !== 'lookup_list_generate_hyde')) return;
     const request_id = ++state.active_request_id;
+    const is_current = () => request_id === state.active_request_id
+      && sanitize_query(query_input.value) === query;
+    state.last_query = query;
+    state.last_action_key = action_key;
+    state.pending_action_key = action_key;
+    state.lookup_list = null;
+    state.menu_params = null;
+    sync_form_state();
+    update_menu_state();
     /** @type {import('jsbrains/smart-types').LookupComponentParams} */
     const next_params = {
       ...params,
       query,
+      is_current,
       auto_submit: auto_submit_input.checked,
       view,
       app,
@@ -207,76 +237,53 @@ export async function post_process(view, container, params = {}) {
       container,
     };
 
-    const embed_model = view.env.smart_sources.embed_model;
-    if (!embed_model.is_loaded) {
-      render_model_loading_state();
-      await embed_model.load_background();
-      if (request_id !== state.active_request_id) return;
-      if (sanitize_query(query_input.value) !== query) {
-        render_info_state();
-        return;
-      }
-      if (!embed_model.is_loaded) {
-        list_container.setAttribute('aria-busy', 'false');
-        this.empty(list_container);
-        this.safe_inner_html(list_container, '<p role="alert">The embedding model could not be loaded. Submit the lookup again to retry.</p>');
-        return;
-      }
-    }
-
-    state.last_query = query;
-    state.lookup_list = null;
-    state.menu_params = null;
-    update_menu_state();
-
-    const lookup_list = view.env.lookup_lists.new_item(next_params);
-    render_querying_state();
-
-    /** @type {import('jsbrains/smart-types').LookupResult[]} */
-    let results;
     try {
-      results = await lookup_list.actions.lookup_list_get_results(next_params);
-    } catch (error) {
-      if (request_id !== state.active_request_id) return;
-      if (sanitize_query(query_input.value) !== query) {
-        state.last_query = null;
-        render_info_state();
-        return;
+      const embed_model = view.env.smart_sources.embed_model;
+      if (!embed_model.is_loaded) {
+        render_model_loading_state();
+        await embed_model.load_background();
+        if (!is_current()) return;
+        if (!embed_model.is_loaded) throw new Error('The embedding model could not be loaded.');
       }
+      const lookup_list = view.env.lookup_lists.new_item(next_params);
+      render_querying_state();
+      const results = await lookup_list.actions[action_key](next_params);
+      if (!is_current()) return;
+
+      const menu_params = { ...next_params, results };
+      const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, menu_params);
+      if (!is_current()) return;
+      state.lookup_list = lookup_list;
+      state.menu_params = menu_params;
+      update_menu_state();
+      this.empty(list_container);
+      list_container.appendChild(rendered_list);
+      list_container.setAttribute('aria-busy', 'false');
+    } catch (error) {
+      if (!is_current()) return;
       state.last_query = null;
       render_lookup_error_state();
       console.error('Lookup failed', error);
-      return;
+    } finally {
+      if (is_current()) {
+        state.pending_action_key = null;
+        sync_form_state();
+      }
     }
-    if (request_id !== state.active_request_id) return;
-    if (sanitize_query(query_input.value) !== query) {
-      state.last_query = null;
-      render_info_state();
-      return;
-    }
-
-    state.lookup_list = lookup_list;
-    state.menu_params = { ...next_params, results };
-    update_menu_state();
-
-    const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, state.menu_params);
-    if (request_id !== state.active_request_id) return;
-    if (sanitize_query(query_input.value) !== query) {
-      state.last_query = null;
-      state.lookup_list = null;
-      state.menu_params = null;
-      update_menu_state();
-      render_info_state();
-      return;
-    }
-    this.empty(list_container);
-    list_container.appendChild(rendered_list);
-    list_container.setAttribute('aria-busy', 'false');
   };
 
   const debounced_submit = create_debounced_submit(submit_query);
 
   query_input.addEventListener('input', () => {
+    // Invalidate on edits, not just submission, so an old completion cannot resume
+    // when the user changes the text and then changes it back.
+    ++state.active_request_id;
+    state.last_query = null;
+    state.pending_action_key = null;
+    state.lookup_list = null;
+    state.menu_params = null;
+    update_menu_state();
+    render_info_state();
     const query = sync_form_state();
     if (!query) {
       debounced_submit.cancel?.();
@@ -304,6 +311,12 @@ export async function post_process(view, container, params = {}) {
     const query = sync_form_state();
     debounced_submit.cancel?.();
     submit_query(query);
+  });
+
+  hyde_btn?.addEventListener('click', () => {
+    const query = sync_form_state();
+    debounced_submit.cancel?.();
+    void submit_query(query, 'lookup_list_generate_hyde');
   });
 
   update_menu_state();

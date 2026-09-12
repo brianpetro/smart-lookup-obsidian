@@ -9,7 +9,7 @@ export async function lookup_list_query(params = {}) {
   const lookup_list = this.new_item?.({ query });
   if (!lookup_list) throw new Error('Unable to create Smart Lookup list.');
 
-  const get_results = lookup_list.actions?.lookup_list_get_results;
+  const get_results = lookup_list.actions?.lookup_list_get_results_query;
   const results = typeof get_results === 'function'
     ? await get_results({ query })
     : await lookup_list.get_results?.({ query })
@@ -72,7 +72,7 @@ export const action_scope = {
   collection_key: 'lookup_lists',
 };
 // Compatibility-only collection wrapper. The canonical public tool is
-// lookup_list_get_results on the exact LookupList scope.
+// lookup_list_get_results_query on the exact LookupList scope.
 export const tool = false;
 
 /** @param {import('jsbrains/smart-types').LookupResult} result */

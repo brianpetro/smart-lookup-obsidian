@@ -4,7 +4,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-function load_post_process() {
+function load_post_process(export_name = 'post_process') {
   const dir_name = path.dirname(fileURLToPath(import.meta.url));
   const file_path = path.join(dir_name, 'item_view.js');
   const full_source = fs.readFileSync(file_path, 'utf8');
@@ -16,11 +16,12 @@ function load_post_process() {
   const source = full_source
     .slice(source_start)
     .replace(/\bexport\s+(?=(?:async\s+)?function)/g, '')
-    .concat('\nmodule.exports = { post_process };\n')
+    .concat('\nmodule.exports = { post_process, build_html };\n')
   ;
   const context = vm.createContext({
     module: { exports: {} },
     exports: {},
+    activeWindow: {},
     console: {
       error() {},
     },
@@ -40,7 +41,7 @@ function load_post_process() {
 
   const script = new vm.Script(source, { filename: file_path });
   script.runInContext(context);
-  return context.module.exports.post_process;
+  return context.module.exports[export_name];
 }
 
 function create_element() {
@@ -83,12 +84,13 @@ function create_element() {
   };
 }
 
-function create_lookup_view_elements() {
+function create_lookup_view_elements({ pro = false } = {}) {
   const container = create_element();
   const query_input = container.set_selector('.lookup-query-input', create_element());
   const query_form = container.set_selector('.lookup-query-form', create_element());
   const auto_submit_input = container.set_selector('.lookup-query-auto-submit', create_element());
   const submit_btn = container.set_selector('.lookup-query-submit', create_element());
+  const hyde_btn = pro ? container.set_selector('.lookup-hyde-submit', create_element()) : null;
   const menu_button = container.set_selector('[data-action="open-menu"]', create_element());
   const list_container = container.set_selector('.smart-lookup-list-container', create_element());
 
@@ -101,6 +103,7 @@ function create_lookup_view_elements() {
     query_form,
     query_input,
     submit_btn,
+    hyde_btn,
   };
 }
 
@@ -138,7 +141,7 @@ test('Lookup view shows querying status until the results action resolves', asyn
   let render_params;
   const lookup_list = {
     actions: {
-      lookup_list_get_results(params) {
+      lookup_list_get_results_query(params) {
         action_calls.push(params);
         return results_deferred.promise;
       },
@@ -196,7 +199,7 @@ test('Lookup view clears querying status and permits retry when the action fails
   let action_calls = 0;
   const lookup_list = {
     actions: {
-      lookup_list_get_results() {
+      lookup_list_get_results_query() {
         action_calls += 1;
         if (action_calls === 1) {
           return Promise.reject(new Error('Lookup unavailable'));
@@ -260,7 +263,7 @@ test('Lookup view submits an initial query supplied by an opening action', async
   const new_item_calls = [];
   const lookup_list = {
     actions: {
-      lookup_list_get_results(params) {
+      lookup_list_get_results_query(params) {
         action_calls.push(params);
         return results_deferred.promise;
       },
@@ -315,4 +318,109 @@ test('Lookup view submits an initial query supplied by an opening action', async
 
   t.deepEqual(elements.list_container.children, [rendered_list]);
   t.is(elements.list_container.attributes['aria-busy'], 'false');
+});
+
+
+test('The optional HyDE button appears only when the Pro workflow is registered', async t => {
+  const build_html = load_post_process('build_html');
+  const free_html = await build_html.call({}, { env: { config: { actions: {} } } });
+  const pro_html = await build_html.call({}, { env: { config: { actions: { lookup_list_generate_hyde: {} } } } });
+  t.false(free_html.includes('lookup-hyde-submit'));
+  t.true(pro_html.includes('lookup-hyde-submit'));
+  t.true(pro_html.includes('TopK query excerpts'));
+});
+
+function create_pro_view(actions) {
+  const scope = { actions };
+  return {
+    env: {
+      lookup_lists: { new_item() { return scope; } },
+      smart_sources: { embed_model: { is_loaded: true } },
+      smart_components: { async render_component(key, item, params) { return params.results; } },
+    },
+  };
+}
+
+test('HyDE runs after Lookup with the same query, prevents duplicate clicks, and permits explicit retry', async t => {
+  const elements = create_lookup_view_elements({ pro: true });
+  const deferred = create_deferred();
+  const calls = [];
+  const view = create_pro_view({
+    async lookup_list_get_results_query(params) { calls.push(['query', params]); return ['query']; },
+    lookup_list_generate_hyde(params) { calls.push(['hyde', params]); return deferred.promise; },
+  });
+  await load_post_process().call(create_component(), view, elements.container);
+  t.true(elements.hyde_btn.disabled);
+  elements.query_input.value = 'same query';
+  elements.query_form.dispatch('submit', { preventDefault() {} });
+  await flush_async();
+  elements.hyde_btn.dispatch('click');
+  elements.hyde_btn.dispatch('click');
+  t.deepEqual(calls.map(call => call[0]), ['query', 'hyde']);
+  t.true(elements.hyde_btn.disabled);
+  t.true(calls[1][1].is_current());
+  deferred.resolve(['hyde']);
+  await flush_async();
+  t.false(elements.hyde_btn.disabled);
+  t.deepEqual(elements.list_container.children, [['hyde']]);
+  elements.hyde_btn.dispatch('click');
+  await flush_async();
+  t.is(calls.length, 3);
+});
+
+test('Automatic input submission remains query-only in Pro', async t => {
+  const elements = create_lookup_view_elements({ pro: true });
+  elements.auto_submit_input.checked = true;
+  let queries = 0;
+  const view = create_pro_view({
+    async lookup_list_get_results_query() { queries++; return []; },
+    async lookup_list_generate_hyde() { t.fail('Typing must not call the chat workflow.'); },
+  });
+  await load_post_process().call(create_component(), view, elements.container);
+  elements.query_input.value = 'typed query';
+  elements.query_input.dispatch('input');
+  await flush_async();
+  t.is(queries, 1);
+});
+
+test('Editing and restoring text invalidates an older generation without replacing current results', async t => {
+  const elements = create_lookup_view_elements({ pro: true });
+  const deferred = create_deferred();
+  let params;
+  const view = create_pro_view({
+    async lookup_list_get_results_query() { return ['new-query']; },
+    lookup_list_generate_hyde(next_params) { params = next_params; return deferred.promise; },
+  });
+  await load_post_process().call(create_component(), view, elements.container);
+  elements.query_input.value = 'intent';
+  elements.hyde_btn.dispatch('click');
+  t.true(params.is_current());
+  elements.query_input.value = 'other';
+  elements.query_input.dispatch('input');
+  elements.query_input.value = 'intent';
+  elements.query_input.dispatch('input');
+  t.false(params.is_current());
+  elements.query_form.dispatch('submit', { preventDefault() {} });
+  await flush_async();
+  deferred.resolve(['stale-document']);
+  await flush_async();
+  t.deepEqual(elements.list_container.children, [['new-query']]);
+});
+
+test('A model-loading failure clears the pending state and permits retry', async t => {
+  const elements = create_lookup_view_elements({ pro: true });
+  let attempts = 0;
+  const view = create_pro_view({ async lookup_list_get_results_query() { return []; } });
+  view.env.smart_sources.embed_model = {
+    is_loaded: false,
+    async load_background() { attempts++; throw new Error('Loading failed'); },
+  };
+  await load_post_process().call(create_component(), view, elements.container);
+  elements.query_input.value = 'intent';
+  elements.query_form.dispatch('submit', { preventDefault() {} });
+  await flush_async();
+  t.true(elements.list_container.inner_html.includes('role="alert"'));
+  elements.query_form.dispatch('submit', { preventDefault() {} });
+  await flush_async();
+  t.is(attempts, 2);
 });

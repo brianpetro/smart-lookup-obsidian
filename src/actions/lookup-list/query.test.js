@@ -8,7 +8,7 @@ test('lookup_list_query creates a Lookup List and returns transport-neutral resu
       query: 'project alpha',
     },
     actions: {
-      async lookup_list_get_results(params) {
+      async lookup_list_get_results_query(params) {
         t.deepEqual(params, {
           query: 'project alpha',
         });
