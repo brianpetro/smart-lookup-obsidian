@@ -1,16 +1,17 @@
 import test from 'ava';
+import { project_lookup_list_request } from 'obsidian-smart-env/src/actions/lookup-list/get_results.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-function load_post_process(export_name = 'post_process') {
+function load_post_process(export_name = 'post_process', file_name = 'item_view.js') {
   const dir_name = path.dirname(fileURLToPath(import.meta.url));
-  const file_path = path.join(dir_name, 'item_view.js');
+  const file_path = path.join(dir_name, file_name);
   const full_source = fs.readFileSync(file_path, 'utf8');
-  const source_start = full_source.indexOf('const REQUIRED_MESSAGE');
+  const source_start = full_source.indexOf(file_name === 'item_view.js' ? 'const REQUIRED_MESSAGE' : '/** @typedef');
   if (source_start === -1) {
-    throw new Error('Lookup item view module body not found.');
+    throw new Error('Lookup presenter module body not found.');
   }
 
   const source = full_source
@@ -49,6 +50,7 @@ function create_element() {
   const listeners = new Map();
   return {
     attributes: {},
+    dataset: {},
     checked: false,
     children: [],
     disabled: false,
@@ -261,6 +263,7 @@ test('Lookup view submits an initial query supplied by an opening action', async
   const rendered_list = create_element();
   const action_calls = [];
   const new_item_calls = [];
+  let render_params;
   const lookup_list = {
     actions: {
       lookup_list_get_results_query(params) {
@@ -278,7 +281,8 @@ test('Lookup view submits an initial query supplied by an opening action', async
         },
       },
       smart_components: {
-        async render_component() {
+        async render_component(component_key, item, params) {
+          render_params = params;
           return rendered_list;
         },
       },
@@ -307,10 +311,8 @@ test('Lookup view submits an initial query supplied by an opening action', async
   t.is(new_item_calls[0].query, 'highlighted text');
   t.is(action_calls.length, 1);
   t.is(action_calls[0].query, 'highlighted text');
-  t.is(
-    action_calls[0].event_source,
-    'command:smart-lookup:smart-lookup-selection',
-  );
+  t.false(Object.hasOwn(action_calls[0], 'event_source'));
+  t.false(Object.hasOwn(new_item_calls[0], 'event_source'));
   t.true(elements.list_container.inner_html.includes('Querying...'));
 
   results_deferred.resolve([]);
@@ -318,6 +320,7 @@ test('Lookup view submits an initial query supplied by an opening action', async
 
   t.deepEqual(elements.list_container.children, [rendered_list]);
   t.is(elements.list_container.attributes['aria-busy'], 'false');
+  t.is(render_params.event_source, 'command:smart-lookup:smart-lookup-selection');
 });
 
 
@@ -328,6 +331,7 @@ test('The optional HyDE button appears only when the Pro workflow is registered'
   t.false(free_html.includes('lookup-hyde-submit'));
   t.true(pro_html.includes('lookup-hyde-submit'));
   t.true(pro_html.includes('TopK query excerpts'));
+  t.true(pro_html.includes('>Generate HyDE</button>'));
 });
 
 function create_pro_view(actions) {
@@ -347,7 +351,7 @@ test('HyDE runs after Lookup with the same query, prevents duplicate clicks, and
   const calls = [];
   const view = create_pro_view({
     async lookup_list_get_results_query(params) { calls.push(['query', params]); return ['query']; },
-    lookup_list_generate_hyde(params) { calls.push(['hyde', params]); return deferred.promise; },
+    lookup_list_generate_hyde(params, request_context) { calls.push(['hyde', params, request_context]); return deferred.promise; },
   });
   await load_post_process().call(create_component(), view, elements.container);
   t.true(elements.hyde_btn.disabled);
@@ -358,7 +362,8 @@ test('HyDE runs after Lookup with the same query, prevents duplicate clicks, and
   elements.hyde_btn.dispatch('click');
   t.deepEqual(calls.map(call => call[0]), ['query', 'hyde']);
   t.true(elements.hyde_btn.disabled);
-  t.true(calls[1][1].is_current());
+  t.false(Object.hasOwn(calls[1][1], 'is_current'));
+  t.true(calls[1][2].is_current());
   deferred.resolve(['hyde']);
   await flush_async();
   t.false(elements.hyde_btn.disabled);
@@ -386,20 +391,20 @@ test('Automatic input submission remains query-only in Pro', async t => {
 test('Editing and restoring text invalidates an older generation without replacing current results', async t => {
   const elements = create_lookup_view_elements({ pro: true });
   const deferred = create_deferred();
-  let params;
+  let request_context;
   const view = create_pro_view({
     async lookup_list_get_results_query() { return ['new-query']; },
-    lookup_list_generate_hyde(next_params) { params = next_params; return deferred.promise; },
+    lookup_list_generate_hyde(params, context) { request_context = context; return deferred.promise; },
   });
   await load_post_process().call(create_component(), view, elements.container);
   elements.query_input.value = 'intent';
   elements.hyde_btn.dispatch('click');
-  t.true(params.is_current());
+  t.true(request_context.is_current());
   elements.query_input.value = 'other';
   elements.query_input.dispatch('input');
   elements.query_input.value = 'intent';
   elements.query_input.dispatch('input');
-  t.false(params.is_current());
+  t.false(request_context.is_current());
   elements.query_form.dispatch('submit', { preventDefault() {} });
   await flush_async();
   deferred.resolve(['stale-document']);
@@ -423,4 +428,109 @@ test('A model-loading failure clears the pending state and permits retry', async
   elements.query_form.dispatch('submit', { preventDefault() {} });
   await flush_async();
   t.is(attempts, 2);
+});
+
+
+test('Both presenters and tools use equivalent retrieval inputs without presenter state', async t => {
+  const elements = create_lookup_view_elements();
+  const calls = [];
+  const view = create_pro_view({
+    async lookup_list_get_results_query(params) { calls.push(params); return []; },
+  });
+  let scope_params;
+  let render_params;
+  const lookup_list = {
+    key: 'lookup',
+    actions: {
+      async lookup_list_get_results(params) { calls.push(params); return []; },
+      ...view.env.lookup_lists.new_item().actions,
+    },
+  };
+  view.env.lookup_lists.new_item = params => { scope_params = params; return lookup_list; };
+  view.env.smart_components.render_component = async (key, item, params) => {
+    render_params = params;
+    return create_element();
+  };
+  const params = {
+    query: '  intent  ', limit: 4, results_collection_key: 'smart_sources',
+    filter: { key_starts_with: 'Notes/' },
+    view, app: { workspace: {} }, workspace: {}, container: elements.container,
+    is_current: () => true, auto_submit: false, event_source: 'selection',
+    hyde_request_id: 7, rendering_state: {}, results: [], lookup_list,
+    score_algo_key: 'chat_rank', score_settings: { weight: 9 },
+    embed_request: { embed_input: 'override', purpose: 'document' },
+    to_item: {}, include_content: true,
+  };
+  await load_post_process().call(create_component(), view, elements.container, params);
+  await flush_async();
+  const expected = {
+    query: 'intent', limit: 4, results_collection_key: 'smart_sources', filter: params.filter,
+  };
+  t.deepEqual(calls[0], expected);
+  t.deepEqual(scope_params, expected);
+  t.is(render_params.event_source, 'selection');
+  t.is(render_params.view, view);
+
+  const component = { ...create_component(), create_doc_fragment: html => ({ html }) };
+  await load_post_process('post_process', 'v3/list.js').call(component, lookup_list, create_element(), {
+    ...params, query: calls[0].query, results: undefined,
+  });
+  t.deepEqual(calls[1], { ...expected, hypothetical_document: undefined });
+
+  // Optional undefined fields disappear in the existing shared action normalizer.
+  const env = { smart_sources: {}, lookup_lists: {
+    results_collection_key: 'smart_sources', new_lookup_list: params => ({ data: { query: params.query } }),
+  } };
+  const tool_params = project_lookup_list_request({ ...expected, include_content: true }, { env }).params;
+  t.deepEqual(project_lookup_list_request(calls[0], { env }).params, tool_params);
+  t.deepEqual(project_lookup_list_request(calls[1], { env }).params, tool_params);
+});
+
+test('V3 preserves explicit document inputs and skips retrieval for supplied results', async t => {
+  const calls = [];
+  const lookup_list = { key: 'lookup', actions: {
+    async lookup_list_get_results(params) { calls.push(params); return []; },
+  } };
+  const component = { ...create_component(), create_doc_fragment: html => ({ html }) };
+  const params = {
+    hypothetical_document: { path: 'Notes/Hypothetical.md', content: 'Hypothetical passage' },
+    results_collection_key: 'smart_sources', limit: 4, filter: { key_starts_with: 'Notes/' },
+    view: {}, app: {}, workspace: {}, container: {}, is_current: () => true,
+  };
+  const post_process = load_post_process('post_process', 'v3/list.js');
+  await post_process.call(component, lookup_list, create_element(), params);
+  t.deepEqual(calls, [{
+    query: undefined, hypothetical_document: params.hypothetical_document,
+    results_collection_key: params.results_collection_key, limit: params.limit, filter: params.filter,
+  }]);
+  await post_process.call(component, lookup_list, create_element(), { ...params, results: [] });
+  t.is(calls.length, 1);
+});
+
+test('Normal and explicit HyDE submissions never reuse a presenter document', async t => {
+  const elements = create_lookup_view_elements({ pro: true });
+  const calls = [];
+  const view = create_pro_view({
+    async lookup_list_get_results_query(params) { calls.push(['query', params]); return []; },
+    async lookup_list_generate_hyde(params, context) {
+      calls.push(['hyde', params]);
+      t.true(context.is_current());
+      return [];
+    },
+  });
+  await load_post_process().call(create_component(), view, elements.container, {
+    query: 'intent', hypothetical_document: { path: 'Old.md', content: 'Old generated text' },
+    is_current: () => false, score_algo_key: 'chat_rank', score_settings: {},
+  });
+  await flush_async();
+  elements.hyde_btn.dispatch('click');
+  await flush_async();
+  elements.query_form.dispatch('submit', { preventDefault() {} });
+  await flush_async();
+  t.deepEqual(calls.map(([key]) => key), ['query', 'hyde', 'query']);
+  for (const [, params] of calls) {
+    t.deepEqual(params, {
+      query: 'intent', limit: undefined, results_collection_key: undefined, filter: undefined,
+    });
+  }
 });

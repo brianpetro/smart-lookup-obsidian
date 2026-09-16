@@ -5,6 +5,9 @@ import {
   show_menu,
 } from './v3/list.js';
 
+// Supersede presenter registrations bundled before the retrieval boundary was closed.
+export const version = '3.1.5';
+
 const REQUIRED_MESSAGE = 'Enter a lookup query to continue.';
 const PLACEHOLDER = 'Describe the idea, topic, or question you want to explore…';
 const INFO = 'Use semantic (embeddings) search to surface relevant notes. Results are sorted by similarity to your query. Note: returns different results than lexical (keyword) search.';
@@ -28,7 +31,7 @@ export async function build_html(view, params = {}) {
   ;
 
   const hyde_button = view.env.config?.actions?.lookup_list_generate_hyde
-    ? '<button class="lookup-hyde-submit" type="button" title="Send bounded TopK query excerpts to the configured chat model and search with a generated hypothetical document.">HyDE</button>'
+    ? '<button class="lookup-hyde-submit" type="button" title="Send bounded TopK query excerpts to the configured chat model and search with a generated hypothetical document.">Generate HyDE</button>'
     : ''
   ;
 
@@ -229,7 +232,6 @@ export async function post_process(view, container, params = {}) {
     const next_params = {
       ...params,
       query,
-      is_current,
       auto_submit: auto_submit_input.checked,
       view,
       app,
@@ -238,6 +240,13 @@ export async function post_process(view, container, params = {}) {
     };
 
     try {
+      // Normal submissions and explicit generation never reuse a previous document.
+      const retrieval_params = {
+        query,
+        limit: params.limit,
+        results_collection_key: params.results_collection_key,
+        filter: params.filter,
+      };
       const embed_model = view.env.smart_sources.embed_model;
       if (!embed_model.is_loaded) {
         render_model_loading_state();
@@ -245,9 +254,14 @@ export async function post_process(view, container, params = {}) {
         if (!is_current()) return;
         if (!embed_model.is_loaded) throw new Error('The embedding model could not be loaded.');
       }
-      const lookup_list = view.env.lookup_lists.new_item(next_params);
+      const lookup_list = view.env.lookup_lists.new_item(retrieval_params);
       render_querying_state();
-      const results = await lookup_list.actions[action_key](next_params);
+      // Only the UI-only Pro workflow receives lifecycle context, out of band.
+      // The query action and every nested retrieval receive semantic inputs only.
+      const results = action_key === 'lookup_list_generate_hyde'
+        ? await lookup_list.actions[action_key](retrieval_params, { is_current })
+        : await lookup_list.actions[action_key](retrieval_params)
+      ;
       if (!is_current()) return;
 
       const menu_params = { ...next_params, results };

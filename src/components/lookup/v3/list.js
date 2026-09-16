@@ -1,6 +1,8 @@
 import { Menu } from 'obsidian';
 import styles_css from './styles.css';
 
+export const version = '3.1.5';
+
 /** @typedef {HTMLElement & {_lookup_list_menu_registered?: boolean}} LookupListElement */
 
 /**
@@ -34,9 +36,16 @@ export async function render(lookup_list, opts = {}) {
  */
 export async function post_process(lookup_list, container, opts = {}) {
   container.dataset.key = lookup_list.key;
+  const retrieval_params = {
+    query: opts.query,
+    hypothetical_document: opts.hypothetical_document,
+    limit: opts.limit,
+    results_collection_key: opts.results_collection_key,
+    filter: opts.filter,
+  };
   const results = Array.isArray(opts.results)
     ? opts.results
-    : await lookup_list.actions.lookup_list_get_results(opts)
+    : await lookup_list.actions.lookup_list_get_results(retrieval_params)
   ;
   const menu_params = {
     ...opts,
