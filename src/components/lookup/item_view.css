@@ -7,7 +7,8 @@
 .lookup-item-view .lookup-top-bar {
   display: flex;
   width: 100%;
-  justify-content: end;
+  align-items: center;
+  gap: 0.5rem 1rem;
 }
 
 .lookup-item-view .lookup-actions {
@@ -16,6 +17,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+  flex: 0 0 auto;
 }
 
 .lookup-item-view .lookup-query-form {
@@ -25,10 +27,13 @@
 }
 
 .lookup-item-view .lookup-query-label {
+  flex: 1 1 auto;
+  margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  text-align: end;
   color: var(--text-muted);
 }
 

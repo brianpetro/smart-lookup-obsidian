@@ -6,7 +6,7 @@ import {
 } from './v3/list.js';
 
 // Supersede presenter registrations bundled before the retrieval boundary was closed.
-export const version = '3.1.5';
+export const version = '3.1.11';
 
 const REQUIRED_MESSAGE = 'Enter a lookup query to continue.';
 const PLACEHOLDER = 'Describe the idea, topic, or question you want to explore…';
@@ -17,6 +17,7 @@ const SUBMIT_LABEL = 'Lookup';
 const MODEL_LOADING_MESSAGE = 'Loading the embedding model. This lookup will run automatically when it is ready.';
 const QUERYING_MESSAGE = 'Querying...';
 const LOOKUP_ERROR_MESSAGE = 'Lookup failed. Submit the lookup again to retry.';
+const NO_RETAINED_RESULTS_MESSAGE = 'No retained results for this query. Use Refresh to run this lookup.';
 
 /**
  * @this {import('jsbrains/smart-types').LookupComponentRenderer}
@@ -25,10 +26,7 @@ const LOOKUP_ERROR_MESSAGE = 'Lookup failed. Submit the lookup again to retry.';
  */
 export async function build_html(view, params = {}) {
   const auto_submit_checked = params.auto_submit === false ? '' : 'checked';
-  const menu_icon = typeof this.get_icon_html === 'function'
-    ? this.get_icon_html('menu')
-    : ''
-  ;
+  const menu_icon = this.get_icon_html('menu');
 
   const hyde_button = view.env.config?.actions?.lookup_list_generate_hyde
     ? '<button class="lookup-hyde-submit" type="button" title="Send bounded TopK query excerpts to the configured chat model and search with a generated hypothetical document.">Generate HyDE</button>'
@@ -43,12 +41,43 @@ export async function build_html(view, params = {}) {
           type="button"
           aria-label="More actions"
           data-action="open-menu"
-          disabled
         >${menu_icon}</button>
+        <button
+          class="clickable-icon"
+          type="button"
+          aria-label="Expand all results"
+          title="Expand all results"
+          data-action="toggle-expanded"
+          disabled
+        >${this.get_icon_html('unfold-vertical')}</button>
+        <button
+          class="clickable-icon"
+          type="button"
+          aria-label="Refresh lookup"
+          title="Refresh lookup (query only)"
+          data-action="refresh-lookup"
+          disabled
+        >${this.get_icon_html('refresh-cw')}</button>
+        <button
+          class="clickable-icon"
+          type="button"
+          aria-label="Previous query"
+          title="Previous query"
+          data-action="history-back"
+          disabled
+        >${this.get_icon_html('arrow-left')}</button>
+        <button
+          class="clickable-icon"
+          type="button"
+          aria-label="Next query"
+          title="Next query"
+          data-action="history-forward"
+          disabled
+        >${this.get_icon_html('arrow-right')}</button>
       </div>
+      <label class="lookup-query-label" for="lookup-query-input" title="${INFO}">Smart Lookup</label>
     </div>
     <form class="lookup-query-form" novalidate>
-      <label class="lookup-query-label" for="lookup-query-input" title="${INFO}">Smart Lookup</label>
       <textarea
         class="lookup-query-input"
         id="lookup-query-input"
@@ -105,6 +134,12 @@ export async function post_process(view, container, params = {}) {
   const hyde_btn = /** @type {HTMLButtonElement|null} */ (container.querySelector('.lookup-hyde-submit'));
   const menu_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="open-menu"]'));
   const list_container = /** @type {HTMLElement} */ (container.querySelector('.smart-lookup-list-container'));
+  const back_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="history-back"]'));
+  const forward_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="history-forward"]'));
+  const fold_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="toggle-expanded"]'));
+  const refresh_button = /** @type {HTMLButtonElement} */ (container.querySelector('[data-action="refresh-lookup"]'));
+  // History owns only navigation; LookupList owns the query and retained results.
+  const history = view.query_history ??= { keys: [], index: -1 };
   const app = /** @type {import('jsbrains/smart-types').LookupApp|null} */ (
     view?.plugin?.app
     || view?.app
@@ -114,40 +149,57 @@ export async function post_process(view, container, params = {}) {
     || null
   );
   /** @type {{
-   *   last_query: string|null,
    *   last_action_key: string|null,
    *   pending_action_key: string|null,
    *   active_request_id: number,
    *   lookup_list: import('jsbrains/smart-types').LookupList|null,
-   *   menu_params: import('jsbrains/smart-types').LookupComponentParams|null
+   *   menu_params: import('jsbrains/smart-types').LookupComponentParams|null,
+   *   expanded: boolean
    * }}
    */
   const state = {
-    last_query: null,
     last_action_key: null,
     pending_action_key: null,
     active_request_id: 0,
     lookup_list: null,
     menu_params: null,
+    expanded: (params.lookup_settings ?? view.env.lookup_lists.settings)?.expanded_view ?? false,
   };
 
-  const update_menu_state = () => {
-    if (!menu_button) return;
-    menu_button.disabled = !state.lookup_list;
+  const update_toolbar_state = () => {
+    back_button.disabled = history.index <= 0;
+    forward_button.disabled = history.index >= history.keys.length - 1;
+    fold_button.disabled = !state.menu_params?.results?.length;
+    refresh_button.disabled = !state.lookup_list || !!state.pending_action_key;
+    const fold_title = state.expanded ? 'Collapse all results' : 'Expand all results';
+    fold_button.setAttribute('aria-label', fold_title);
+    fold_button.setAttribute('title', fold_title);
+    this.safe_inner_html(fold_button, this.get_icon_html(state.expanded ? 'fold-vertical' : 'unfold-vertical'));
   };
+
+  fold_button.addEventListener('click', () => {
+    if (fold_button.disabled) return;
+    state.expanded = !state.expanded;
+    list_container.querySelectorAll('.lookup-result').forEach((result_el) => {
+      result_el.classList.toggle('sc-collapsed', !state.expanded);
+    });
+    update_toolbar_state();
+  });
 
   /** @param {Event} event */
   const open_lookup_menu = (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!state.lookup_list) return;
-
-    const menu = build_lookup_list_menu(state.lookup_list, {
+    const menu = build_lookup_list_menu(state.menu_params ? state.lookup_list : null, {
       ...(state.menu_params || params),
+      app,
+      view,
       event,
     });
     if (!menu) return;
 
+    if (menu.items?.length) menu.addSeparator();
+    view.env.build_menu?.('lookup:item_view_list_menu', menu, view);
     show_menu(menu, event, menu_button);
   };
 
@@ -196,48 +248,73 @@ export async function post_process(view, container, params = {}) {
   };
 
   /**
-   * @param {unknown} raw_query
-   * @param {string} [action_key] - Normal/automatic submission is always query-only.
+   * @param {import('jsbrains/smart-types').LookupList} lookup_list
+   * @param {import('jsbrains/smart-types').LookupResult[]|null} results
+   * @param {() => boolean} is_current
    */
-  const submit_query = async (raw_query, action_key = 'lookup_list_get_results_query') => {
-    const query = sanitize_query(raw_query);
-    update_query_validity({ input_el: query_input, query });
-    update_submit_state({ submit_btn, query });
-    if (!query) {
-      ++state.active_request_id;
-      state.last_query = null;
-      state.pending_action_key = null;
-      state.lookup_list = null;
-      state.menu_params = null;
-      sync_form_state();
-      update_menu_state();
-      render_info_state();
+  const render_lookup_list = async (lookup_list, results, is_current) => {
+    if (!results) {
+      list_container.setAttribute('aria-busy', 'false');
+      this.empty(list_container);
+      this.safe_inner_html(list_container, `<p role="status">${NO_RETAINED_RESULTS_MESSAGE}</p>`);
       return;
     }
-    // Switching from Lookup to HyDE must run even for the same text. A completed
-    // HyDE can be explicitly regenerated, but repeated clicks while pending do not run.
-    if (query === state.last_query && action_key === state.last_action_key
-      && (state.pending_action_key || action_key !== 'lookup_list_generate_hyde')) return;
-    const request_id = ++state.active_request_id;
-    const is_current = () => request_id === state.active_request_id
-      && sanitize_query(query_input.value) === query;
-    state.last_query = query;
-    state.last_action_key = action_key;
-    state.pending_action_key = action_key;
-    state.lookup_list = null;
-    state.menu_params = null;
-    sync_form_state();
-    update_menu_state();
-    /** @type {import('jsbrains/smart-types').LookupComponentParams} */
-    const next_params = {
+    const menu_params = {
       ...params,
-      query,
+      query: lookup_list.data.query,
+      results,
       auto_submit: auto_submit_input.checked,
+      lookup_settings: {
+        ...(params.lookup_settings ?? view.env.lookup_lists.settings),
+        expanded_view: state.expanded,
+      },
       view,
       app,
       workspace: app?.workspace,
       container,
     };
+    const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, menu_params);
+    if (!is_current()) return;
+    state.menu_params = menu_params;
+    update_toolbar_state();
+    this.empty(list_container);
+    list_container.appendChild(rendered_list);
+    list_container.setAttribute('aria-busy', 'false');
+  };
+
+  /**
+   * @param {unknown} raw_query
+   * @param {string} [action_key] - Normal/automatic submission is always query-only.
+   * @param {boolean} [refresh=false] - Rerun the selected item without adding history.
+   */
+  const submit_query = async (raw_query, action_key = 'lookup_list_get_results_query', refresh = false) => {
+    const query = sanitize_query(raw_query);
+    update_query_validity({ input_el: query_input, query });
+    update_submit_state({ submit_btn, query });
+    if (!query) {
+      ++state.active_request_id;
+      state.last_action_key = null;
+      state.pending_action_key = null;
+      state.lookup_list = null;
+      state.menu_params = null;
+      sync_form_state();
+      update_toolbar_state();
+      render_info_state();
+      return;
+    }
+    // Switching from Lookup to HyDE must run even for the same text. A completed
+    // HyDE can be explicitly regenerated, but repeated clicks while pending do not run.
+    if (query === state.lookup_list?.data.query && action_key === state.last_action_key
+      && (state.pending_action_key || (!refresh && action_key !== 'lookup_list_generate_hyde'))) return;
+    const request_id = ++state.active_request_id;
+    const is_current = () => request_id === state.active_request_id
+      && sanitize_query(query_input.value) === query;
+    state.last_action_key = action_key;
+    state.pending_action_key = action_key;
+    state.lookup_list = null;
+    state.menu_params = null;
+    sync_form_state();
+    update_toolbar_state();
 
     try {
       // Normal submissions and explicit generation never reuse a previous document.
@@ -247,6 +324,19 @@ export async function post_process(view, container, params = {}) {
         results_collection_key: params.results_collection_key,
         filter: params.filter,
       };
+      const selected_list = view.env.lookup_lists.get(history.keys[history.index]);
+      const lookup_list = selected_list?.data.query === query
+        ? selected_list
+        : view.env.lookup_lists.new_item(retrieval_params)
+      ;
+      state.lookup_list = lookup_list;
+      // A different item starts a new branch; Refresh keeps the selected key/index.
+      if (history.keys[history.index] !== lookup_list.key) {
+        history.keys.splice(history.index + 1);
+        history.keys.push(lookup_list.key);
+        history.index = history.keys.length - 1;
+      }
+      update_toolbar_state();
       const embed_model = view.env.smart_sources.embed_model;
       if (!embed_model.is_loaded) {
         render_model_loading_state();
@@ -254,7 +344,6 @@ export async function post_process(view, container, params = {}) {
         if (!is_current()) return;
         if (!embed_model.is_loaded) throw new Error('The embedding model could not be loaded.');
       }
-      const lookup_list = view.env.lookup_lists.new_item(retrieval_params);
       render_querying_state();
       // Only the UI-only Pro workflow receives lifecycle context, out of band.
       // The query action and every nested retrieval receive semantic inputs only.
@@ -264,39 +353,73 @@ export async function post_process(view, container, params = {}) {
       ;
       if (!is_current()) return;
 
-      const menu_params = { ...next_params, results };
-      const rendered_list = await view.env.smart_components.render_component('lookup_v3_list', lookup_list, menu_params);
-      if (!is_current()) return;
-      state.lookup_list = lookup_list;
-      state.menu_params = menu_params;
-      update_menu_state();
-      this.empty(list_container);
-      list_container.appendChild(rendered_list);
-      list_container.setAttribute('aria-busy', 'false');
+      await render_lookup_list(lookup_list, results, is_current);
+      // Retain only the final displayed results, never intermediate or stale passes.
+      if (is_current()) lookup_list.results = results;
     } catch (error) {
       if (!is_current()) return;
-      state.last_query = null;
+      state.last_action_key = null;
       render_lookup_error_state();
       console.error('Lookup failed', error);
     } finally {
       if (is_current()) {
         state.pending_action_key = null;
         sync_form_state();
+        update_toolbar_state();
       }
     }
   };
 
   const debounced_submit = create_debounced_submit(submit_query);
+  this.attach_disposer(container, () => {
+    ++state.active_request_id;
+    debounced_submit.cancel?.();
+  });
+
+  /** @param {number} direction */
+  const navigate_history = async (direction) => {
+    const next_index = history.index + direction;
+    if (next_index < 0 || next_index >= history.keys.length) return;
+    const lookup_list = view.env.lookup_lists.get(history.keys[next_index]);
+    if (!lookup_list) return;
+    debounced_submit.cancel?.();
+    const request_id = ++state.active_request_id;
+    const is_current = () => request_id === state.active_request_id;
+    history.index = next_index;
+    query_input.value = lookup_list.data.query;
+    state.last_action_key = null;
+    state.pending_action_key = null;
+    state.lookup_list = lookup_list;
+    state.menu_params = null;
+    sync_form_state();
+    update_toolbar_state();
+    render_info_state();
+    try {
+      // Navigation only renders retained results; it never invokes retrieval.
+      await render_lookup_list(lookup_list, lookup_list.results, is_current);
+    } catch (error) {
+      if (!is_current()) return;
+      render_lookup_error_state();
+      console.error('Lookup failed', error);
+    }
+  };
+  back_button.addEventListener('click', () => void navigate_history(-1));
+  forward_button.addEventListener('click', () => void navigate_history(1));
+  refresh_button.addEventListener('click', () => {
+    if (refresh_button.disabled) return;
+    debounced_submit.cancel?.();
+    void submit_query(state.lookup_list.data.query, 'lookup_list_get_results_query', true);
+  });
 
   query_input.addEventListener('input', () => {
     // Invalidate on edits, not just submission, so an old completion cannot resume
     // when the user changes the text and then changes it back.
     ++state.active_request_id;
-    state.last_query = null;
+    state.last_action_key = null;
     state.pending_action_key = null;
     state.lookup_list = null;
     state.menu_params = null;
-    update_menu_state();
+    update_toolbar_state();
     render_info_state();
     const query = sync_form_state();
     if (!query) {
@@ -333,11 +456,11 @@ export async function post_process(view, container, params = {}) {
     void submit_query(query, 'lookup_list_generate_hyde');
   });
 
-  update_menu_state();
-  const initial_query = sanitize_query(params.query);
-  query_input.value = initial_query;
+  update_toolbar_state();
+  query_input.value = sanitize_query(params.query);
   sync_form_state();
-  if (initial_query) void submit_query(initial_query);
+  if (params.query === undefined && history.index >= 0) void navigate_history(0);
+  else if (query_input.value) void submit_query(query_input.value);
   return container;
 }
 

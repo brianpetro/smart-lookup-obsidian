@@ -2,13 +2,15 @@
 
 import lookup_lists from './src/collections/lookup_lists.js';
 
-import { render as lookup_item_view_component } from './src/components/lookup/item_view.js';
-import { render as lookup_v3_list_component } from './src/components/lookup/v3/list.js';
+import { render as lookup_item_view_component, version as lookup_item_view_component_version } from './src/components/lookup/item_view.js';
+import { render as lookup_v3_list_component, version as lookup_v3_list_component_version } from './src/components/lookup/v3/list.js';
 import { render as lookup_v3_list_item_component, settings_config as lookup_v3_list_item_component_settings_config } from './src/components/lookup/v3/list_item.js';
 
 import { lookup_list_query as lookup_list_query_action, display_name as lookup_list_query_action_display_name, display_description as lookup_list_query_action_display_description, action_scope as lookup_list_query_action_action_scope, tool as lookup_list_query_action_tool, input_schema as lookup_list_query_action_input_schema, output_schema as lookup_list_query_action_output_schema } from './src/actions/lookup-list/query.js';
 import { lookup_list_send_to_smart_context as lookup_list_send_to_smart_context_action, menus as lookup_list_send_to_smart_context_action_menus, version as lookup_list_send_to_smart_context_action_version } from './src/actions/lookup-list/send_to_smart_context.js';
 import { lookup_list_send_to_smart_graph as lookup_list_send_to_smart_graph_action, menus as lookup_list_send_to_smart_graph_action_menus, version as lookup_list_send_to_smart_graph_action_version } from './src/actions/lookup-list/send_to_smart_graph.js';
+import { lookup_open_help as lookup_open_help_action, menus as lookup_open_help_action_menus } from './src/actions/lookup/open_help.js';
+import { lookup_open_settings as lookup_open_settings_action, menus as lookup_open_settings_action_menus } from './src/actions/lookup/open_settings.js';
 import { lookup_open_view as lookup_open_view_action, commands as lookup_open_view_action_commands, ribbon_icons as lookup_open_view_action_ribbon_icons, menus as lookup_open_view_action_menus } from './src/actions/lookup/open_view.js';
 
 
@@ -23,14 +25,16 @@ export const smart_env_config = {
 
   },
   components: {
-    lookup_item_view: { render: lookup_item_view_component, version: "3.1.2" },
-    lookup_v3_list: { render: lookup_v3_list_component, version: "3.1.2" },
-    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "3.1.2" }
+    lookup_item_view: { render: lookup_item_view_component, version: lookup_item_view_component_version },
+    lookup_v3_list: { render: lookup_v3_list_component, version: lookup_v3_list_component_version },
+    lookup_v3_list_item: { render: lookup_v3_list_item_component, settings_config: lookup_v3_list_item_component_settings_config, version: "3.1.3" }
   },
   actions: {
-    lookup_list_query: { action: lookup_list_query_action, display_name: lookup_list_query_action_display_name, display_description: lookup_list_query_action_display_description, action_scope: lookup_list_query_action_action_scope, tool: lookup_list_query_action_tool, input_schema: lookup_list_query_action_input_schema, output_schema: lookup_list_query_action_output_schema, version: "3.1.2" },
+    lookup_list_query: { action: lookup_list_query_action, display_name: lookup_list_query_action_display_name, display_description: lookup_list_query_action_display_description, action_scope: lookup_list_query_action_action_scope, tool: lookup_list_query_action_tool, input_schema: lookup_list_query_action_input_schema, output_schema: lookup_list_query_action_output_schema, version: "3.1.3" },
     lookup_list_send_to_smart_context: { action: lookup_list_send_to_smart_context_action, menus: lookup_list_send_to_smart_context_action_menus, version: lookup_list_send_to_smart_context_action_version },
     lookup_list_send_to_smart_graph: { action: lookup_list_send_to_smart_graph_action, menus: lookup_list_send_to_smart_graph_action_menus, version: lookup_list_send_to_smart_graph_action_version },
-    lookup_open_view: { action: lookup_open_view_action, commands: lookup_open_view_action_commands, ribbon_icons: lookup_open_view_action_ribbon_icons, menus: lookup_open_view_action_menus, version: "3.1.2" }
+    lookup_open_help: { action: lookup_open_help_action, menus: lookup_open_help_action_menus, version: "3.1.3" },
+    lookup_open_settings: { action: lookup_open_settings_action, menus: lookup_open_settings_action_menus, version: "3.1.3" },
+    lookup_open_view: { action: lookup_open_view_action, commands: lookup_open_view_action_commands, ribbon_icons: lookup_open_view_action_ribbon_icons, menus: lookup_open_view_action_menus, version: "3.1.3" }
   }
 };
