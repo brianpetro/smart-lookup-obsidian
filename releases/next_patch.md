@@ -11,3 +11,7 @@ The adjacent **HyDE** button retrieves query matches, sends bounded TopK excerpt
 CLI: `smart:lookup` / `lookup` use the combined tool; `smart:lookup:query` and `smart:lookup:hyde` expose the narrow tools. Existing query-only MCP calls remain valid; callers supplying a hypothetical to `smart_lookup_query` must use `smart_lookup` or `smart_lookup_hyde` instead.
 
 
+
+
+Improved: lookup view functionality and menu interactions
+Added: new buttons for history navigation and refresh functionalities.
