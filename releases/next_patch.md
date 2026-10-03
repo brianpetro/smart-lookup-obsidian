@@ -15,3 +15,6 @@ CLI: `smart:lookup` / `lookup` use the combined tool; `smart:lookup:query` and `
 
 Improved: lookup view functionality and menu interactions
 Added: new buttons for history navigation and refresh functionalities.
+
+
+Improved: rearrange onload method to register ribbon actions before layout initialization (resolved: preserve ribbon icon ordering)
