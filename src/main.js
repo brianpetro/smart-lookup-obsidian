@@ -25,10 +25,11 @@ export default class SmartLookupPlugin extends SmartPlugin {
   }
 
   onload() {
-    this.app.workspace.onLayoutReady(this.initialize.bind(this));
     this.SmartEnv.create(this, this.smart_env_config);
     this.addSettingTab(new this.LookupSettingsTab(this.app, this, 'smart-lookup'));
     this.register_item_views({ skip_command_registration: true });
+    this.register_ribbon_actions();
+    this.app.workspace.onLayoutReady(this.initialize.bind(this));
   }
 
   onunload() {
@@ -52,7 +53,6 @@ export default class SmartLookupPlugin extends SmartPlugin {
   }
 
   async initialize() {
-    this.register_ribbon_actions();
     await this.SmartEnv.wait_for({ loaded: true });
     this.register_command_actions();
     this.register_editor_menu();
