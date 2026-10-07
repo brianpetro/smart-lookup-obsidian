@@ -37,24 +37,41 @@ export async function build_html(result, params = {}) {
   return `<div class="temp-container">
     <div
       class="lookup-result ${all_expanded ? '' : 'sc-collapsed'}"
-      data-path="${item.path.replace(/"/g, '&quot;')}"
-      data-link="${item.link?.replace(/"/g, '&quot;') || ''}"
-      data-collection="${item.collection_key}"
-      data-score="${score}"
-      data-key="${item.key}"
+      data-path="${escape_html(item.path)}"
+      data-link="${escape_html(item.link || '')}"
+      data-collection="${escape_html(item.collection_key)}"
+      data-score="${escape_html(score)}"
+      data-key="${escape_html(item.key)}"
       draggable="true"
     >
       <span class="header">
         ${this.get_icon_html('right-triangle')}
-        <a class="lookup-result-file-title" href="#" title="${item.path.replace(/"/g, '&quot;')}" draggable="true">
+        <a class="lookup-result-file-title" href="#" title="${escape_html(item.path)}" draggable="true">
           ${header_html}
         </a>
       </span>
       <ul draggable="true">
-        <li class="lookup-result-file-title" title="${item.path.replace(/"/g, '&quot;')}" data-collection="${item.collection_key}" data-key="${item.key}"></li>
+        <li class="lookup-result-file-title" title="${escape_html(item.path)}" data-collection="${escape_html(item.collection_key)}" data-key="${escape_html(item.key)}"></li>
       </ul>
     </div>
   </div>`;
+}
+
+/**
+ * Escapes HTML-sensitive characters so untrusted values (note content, file
+ * names, headings) cannot break out of an attribute or inject markup when the
+ * resulting string is parsed into a DocumentFragment.
+ * @param {*} value - The value to escape (coerced to string).
+ * @returns {string} The escaped string.
+ */
+export function escape_html(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+  ;
 }
 
 /**
@@ -177,13 +194,14 @@ function get_result_header_html(score, item, component_settings = {}) {
   const formatted_score = typeof score === 'number' ? score.toFixed(2) : score;
   const separator = '<small class="sc-breadcrumb-separator"> &gt; </small>';
   const parts_html = parts
-    .map(part => (`<small class="sc-breadcrumb">${part}</small>`))
+    .map(part => (`<small class="sc-breadcrumb">${escape_html(part)}</small>`))
     .join(separator)
   ;
+  const display_name = name.endsWith('.md') ? name.replace(/\.md$/, '') : name;
   return [
-    `<small class="sc-breadcrumb sc-score">${formatted_score}</small>`,
+    `<small class="sc-breadcrumb sc-score">${escape_html(formatted_score)}</small>`,
     `${parts_html}${separator}`,
-    `<small class="sc-breadcrumb sc-title">${name.endsWith('.md') ? name.replace(/\.md$/, '') : name}</small>`,
+    `<small class="sc-breadcrumb sc-title">${escape_html(display_name)}</small>`,
   ].join('');
 }
 
