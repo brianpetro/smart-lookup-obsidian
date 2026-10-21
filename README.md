@@ -201,21 +201,21 @@ Smart Lookup Core gives you the question-first semantic search workflow:
 Ask naturally -> scan results -> expand preview -> open or link the best match
 ```
 
-Smart Lookup Pro is the advanced track for users who need more control over ranking and retrieval behavior.
+Smart Lookup Pro keeps that workflow and adds Environment Pro acceleration plus **Generate HyDE**, a separate, explicit generation-assisted search action. Normal Lookup does not call a chat model.
 
-Where enabled, Smart Lookup Pro can add:
+Generate HyDE sends the query and bounded excerpts from top query matches to the configured default chat model, then uses a hypothetical document to retrieve real source candidates. **HyDE context results** ranges from 0 to 20 and defaults to 5; zero omits source excerpts, not the query or the model call. **Results limit** is a separate control.
 
-- configurable score algorithm selection
-- optional post-process re-ranking
-- ranking settings stored with Lookup list action settings
-- Pro vector index acceleration before optional re-ranking
+The hypothetical document is not a source note or a validated answer. Inspect the returned sources. Combined scores can exceed 1 and are not confidence percentages. If generation fails and ordinary query results appear, check Events and notifications rather than treating the list as proof that HyDE succeeded.
 
-Core remains the shortest path to value. Pro is optional depth for specific advanced workflows.
+The source reviewed for this wording uses fixed similarity retrieval without Lookup scoring/reranking selectors. Earlier algorithm-selector descriptions are not a current feature promise; match the documentation to the accepted build before publication.
+
+Core remains the shortest path to value. Pro adds an explicit optional workflow rather than changing every query into a model call.
 
 Learn more:
 
 - [Core vs Pro](https://smartconnections.app/smart-plugins/core-vs-pro/?utm_source=lookup-readme)
 - [Pro plugins](https://smartconnections.app/pro-plugins/?utm_source=lookup-readme)
+
 
 ## Privacy and data boundary
 
@@ -235,7 +235,6 @@ Smart Lookup is source-available under the Smart Plugins License.
 | Command | Use |
 | --- | --- |
 | `Open: Lookup view` | Opens the Smart Lookup view. |
-| `Search selection with Smart Lookup` | Opens Lookup with the selected editor text and runs it as the query. The same action appears when right-clicking a non-empty editor selection. |
 
 Smart Lookup also adds a ribbon icon for opening the Lookup view.
 
