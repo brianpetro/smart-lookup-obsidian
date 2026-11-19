@@ -64,7 +64,7 @@ You know it worked when:
 
 > One useful result from your own vault can be verified from the preview, even when the exact words differ.
 
-A good first query is about work you are already doing. Avoid judging Lookup with a vague demo question unless your vault has enough matching notes to make the result meaningful.
+A good first query is about work you are already doing.
 
 ![Smart Lookup query results](https://smartconnections.app/assets/Lookup-item-view-annotated-with-query-2025-12-09.png)
 
@@ -115,7 +115,7 @@ Exact phrase -> Obsidian search
 - Query box designed for questions, ideas, and topics
 - Auto-submit toggle so you can pause automatic lookups and submit manually
 - Ranked semantic results with scores
-- Expandable result previews for review before trust
+- Expandable previews to help you recognize a note before opening it
 - Open results directly in Obsidian
 - Drag results into notes as links
 - Modifier-key hover previews through Obsidian
@@ -124,8 +124,6 @@ Exact phrase -> Obsidian search
 - Not desktop-only in the manifest; mobile may show Smart Environment loading controls when needed
 
 ## Reading results
-
-Semantic results are candidates for review, not conclusions.
 
 Use this loop:
 
@@ -137,7 +135,7 @@ Use this loop:
 
 ![lookup-ranked-results-expanded-documentation-1280x720-desktop-2026-07-30](images/lookup-ranked-results-expanded-documentation-1280x720-desktop-2026-07-30.png)
 
-Treat score and rank as signals. They help you decide what to inspect first, but they do not prove that the top result is the right result.
+Score helps you decide which result to review first.
 
 ## When results are weak
 
@@ -168,8 +166,6 @@ Smart Lookup can search different result types depending on your Smart Environme
 Start with Sources when you are learning the workflow. Use Blocks when note-level results are too broad.
 
 ## Turn found notes into AI-ready context
-
-Retrieval is only half the workflow.
 
 After you find a useful result, you can:
 
@@ -203,7 +199,7 @@ Ask naturally -> scan results -> expand preview -> open or link the best match
 
 Smart Lookup Pro keeps that workflow and adds Environment Pro acceleration plus **Generate HyDE**, a separate, explicit generation-assisted search action. Normal Lookup does not call a chat model.
 
-Generate HyDE sends the query and bounded excerpts from top query matches to the configured default chat model, then uses a hypothetical document to retrieve real source candidates. **HyDE context results** ranges from 0 to 20 and defaults to 5; zero omits source excerpts, not the query or the model call. **Results limit** is a separate control.
+Generate HyDE sends the query and excerpts from top query matches to the configured default chat model, then uses a hypothetical document to retrieve real source candidates. **HyDE context results** ranges from 0 to 20 and defaults to 5; zero omits source excerpts, not the query or the model call. **Results limit** is a separate control.
 
 The hypothetical document is not a source note or a validated answer. Inspect the returned sources. Combined scores can exceed 1 and are not confidence percentages. If generation fails and ordinary query results appear, check Events and notifications rather than treating the list as proof that HyDE succeeded.
 
@@ -280,15 +276,11 @@ What notes are about this question or idea?
 
 ### Why did Lookup return a result without my exact words?
 
-That is often the point.
-
 Lookup retrieves by meaning, so it can surface notes that use different vocabulary. If you need exact wording, use Obsidian search.
 
 ### Should I trust the top result?
 
-Preview.
-
-The top result is a candidate to inspect first, not a guarantee of truth.
+Expand its preview to see whether it contains the idea you're looking for.
 
 ### What should I do after I find the note?
 
